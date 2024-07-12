@@ -1,11 +1,11 @@
 import discord, asyncio
 
-with open("TOKEN") as f:
-    TOKEN = f.read()
-with open("MESSAGE") as f:
-    MESSAGE = f.read()
-with open("SERVER_CHANNEL_NAME") as f:
-    SERVER_CHANNEL_NAME=f.read()
+FILES = ["TOKEN", "MESSAGE", "SERVER_CHANNEL_NAME"]
+contents = []
+for file in FILES:
+    with open(file, encoding="utf-8") as f:
+        contents.append(f.read())
+TOKEN, MESSAGE, SERVER_CHANNEL_NAME = contents
 
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
