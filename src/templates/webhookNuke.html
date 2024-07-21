@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Annoyance Tools - Webhook Nuke</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <script src="https://unpkg.com/htmx.org@2.0.1"></script>
+</head>
+<body class="container-fluid">
+    <h1>WebHook Nuke</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <form method="post" class="mb-3" id="form" accept-charset="UTF-8">
+                <div class="mb-2">
+                    <label for="webhookUrl">WebHook URL(改行で複数)</label>
+                    <input type="text" class="form-control" id="webhookUrl" name="webhookUrl" required></input>
+                </div>
+                <div class="mb-2">
+                    <label for="latency">レイテンシ（1Nukeと1Nukeの間の遅延ms）</label>
+                    <input type="number" class="form-control" id="latency" name="latency" value="200" required>
+                </div>
+                <div class="mb-2">
+                    <label for="message">メッセージ</label>
+                    <textarea class="form-control" id="message" name="message" rows="15" required>@everyone
+# Nuke</textarea>
+                </div>
+                <button type="submit" id="submit" class="btn btn-primary">
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    Nuke!
+                </button>
+            </form>
+        </div>
+    </div>
+    {% if logId %}
+    <button class="btn btn-primary" onclick="location.href='stopDiscordWebhook?id={{ logId }}'">Stop</button>
+    <pre style="white-space: pre-warp;">
+        <div hx-get="getDiscordWebhookLog?id={{ logId }}" hx-trigger="every 300ms"></div>
+    </pre>
+    {% endif %}
+    <script>
+        document.getElementById('form').addEventListener('submit', function(event) {
+            var webhookUrlsInput = document.getElementById("webhookUrls");
+            var latencyInput = document.getElementById("latency");
+            var messageInput = document.getElementById("message");
+            var submitButton = document.getElementById("submit");
+            webhookUrlsInput.readOnly = latencyInput.readOnly = messageInput.readOnly = true;
+            submitButton.disabled = true;
+            var spinner = this.querySelector('.spinner-border');
+            spinner.classList.remove('d-none');
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+</body>
+</html>

