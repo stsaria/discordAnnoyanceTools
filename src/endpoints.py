@@ -1,6 +1,7 @@
 import subprocess, threading, traceback, shutil, asyncio, string, random, time, sys, os
 import discordWebhook, discordBot
-from flask import Flask, request, make_response, redirect, url_for, session, render_template, jsonify
+from flask import Flask, request, redirect, render_template
+
 app = Flask(__name__)
 
 @app.route('/')
