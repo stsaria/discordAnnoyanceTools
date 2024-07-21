@@ -73,13 +73,12 @@ def allChannelDelete():
     if request.method == "POST":
         token = request.form["token"]
         guildId = request.form["guildId"]
-        createOne = request.form["createOne"]
         
         discord = discordBot.DiscordBot(token)
         botThread = threading.Thread(target=discord.runBot, daemon=True)
         botThread.start()
         time.sleep(5)
-        asyncio.run_coroutine_threadsafe(discord.allChannelDelete(guildId, createOne), discord.loop)
+        asyncio.run_coroutine_threadsafe(discord.allChannelDelete(guildId), discord.loop)
     return render_template('allChannelDelete.html')
 
 @app.route('/grabber', methods=["GET", "POST"])

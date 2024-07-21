@@ -5,27 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Discord Annoyance Tools - AllChannelDelete</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body class="container-fluid">
     <h1>AllChannelDelete</h1>
     <p>管理者Botの招待リンクは</p>
     <pre>https://discord.com/oauth2/authorize?client_id=クライアントID&permissions=8&response_type=code&integration_type=0&scope=bot</pre>
-    <p>です。クライアントIDはBotの設定画面からOAuth2にあります。<br>
-    Tokenは設定画面のBotに Reset Token ボタンを押すと取得できます。</p>
+    <p>です。クライアントIDはBotの設定画面>OAuth2>CLIENT IDにあります。<br>
+    Tokenは設定画面>Bot>Reset Tokenを押すと取得できます。</p>
     <div class="row">
         <div class="col-md-6">
             <form method="post" class="mb-3" id="form" accept-charset="UTF-8">
                 <div class="mb-2">
                     <label for="token">Token</label>
-                    <input type="text" class="form-control" id="token" name="token" required>
+                    <div class="position-relative">
+                        <input type="password" class="form-control" id="token" name="token" required>
+                        <span id="eyeIcon" class="bi bi-eye translate-middle position-absolute top-50 end-0" onclick="eyeToken();"></span>
+                    </div>   
                 </div>
                 <div class="mb-2">
                     <label for="guildId">Guild ID</label>
                     <input type="text" class="form-control" id="guildId" name="guildId" required>
-                </div>
-                <div class="mb-2">
-                    <label for="createOne">削除後に一つだけチャンネルを作成するか</label>
-                    <input type="checkbox" class="form-check-input" value="" id="createOne" name="createOne" checked>
                 </div>
                 <button type="submit" id="submit" class="btn btn-primary">
                     <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
@@ -34,7 +34,13 @@
             </form>
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script>
+        function eyeToken(){
+            $("#eyeIcon").toggleClass("bi-eye-slash bi-eye");
+            const type = $('#token').attr('type') === 'password' ? 'text' : 'password';
+            $('#token').attr('type', type);
+        }
         document.getElementById('form').addEventListener('submit', function(event) {
             var tokenInput = document.getElementById("token");
             var guildIdInput = document.getElementById("guildId");

