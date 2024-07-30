@@ -1,2 +1,4 @@
 discord == 2.3.2
 cx_Freeze
+requests
+py7zr
