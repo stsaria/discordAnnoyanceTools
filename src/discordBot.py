@@ -84,19 +84,17 @@ class DiscordBot(discord.Client):
         stops.append(self.logId)
         await self.close()
     async def on_ready(self):
-        guild = None
-        for guild in self.guilds:
-            if guild.id == self.guildId:
-                break
-        if not guild:
-            logs[self.logId] += "Error: The server you entered has not been joined by a bot."
+        logs[self.logId] += f"ID:{self.user.id}, Name:{self.user.name}\n\n"
+        self.guild = self.get_guild(self.guildId)
+        if not self.guild:
+            logs[self.logId] += f"Error: The server you entered has not been joined by a bot."
             await self.close()
             return
         if self.allUserBan:
-            await self.banAllUser(guild)
+            await self.banAllUser(self.guild)
         if self.allChannelDelete:
-            await self.deleteAllChannel(guild)
-        await self.nuke(self.nukeLatency, self.message, guild, self.channelName)
+            await self.deleteAllChannel(self.guild)
+        await self.nuke(self.nukeLatency, self.message, self.guild, self.channelName)
     async def on_message(self, message):
         if message.author.bot:
             return
