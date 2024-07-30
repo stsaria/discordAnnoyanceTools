@@ -23,7 +23,7 @@ class DiscordWebhook:
         # latencyはms
         global logs
         logs[logId] = ""
-        for i in range(numberOfExecutions):
+        for _ in range(numberOfExecutions):
             if logId in stops:
                 logs.pop(logId)
                 return
