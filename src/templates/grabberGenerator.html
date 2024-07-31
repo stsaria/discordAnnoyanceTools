@@ -9,9 +9,9 @@
 <body class="container-fluid">
     <h1>Grabber Generator</h1>
     {% if error %}
-    <p style="color: red;">{{ error |safe }}</p>
+    <p class="text-success">{{ error |safe }}</p>
     {% elif success %}
-    <p style="color: green;">{{ success }}</p>
+    <p class="text-danger">{{ success }}</p>
     {% endif %}
     作成したGrabberのexeは入力したWebhook URLに送信されます
     <div class="row">
