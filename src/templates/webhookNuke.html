@@ -24,10 +24,12 @@
                     <textarea class="form-control" id="message" name="message" rows="15" required>@everyone
 # Nuke</textarea>
                 </div>
+                {% if not logId %}
                 <button type="submit" id="submit" class="btn btn-primary">
                     <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                     Nuke!
                 </button>
+                {% endif %}
             </form>
         </div>
     </div>
