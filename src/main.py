@@ -1,4 +1,6 @@
-import webbrowser, endpoints, sys
+import webbrowser, endpoints, sys, os
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def main():
     port = 8080

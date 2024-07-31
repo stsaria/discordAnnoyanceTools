@@ -3,7 +3,6 @@ import discordWebhook, discordBot
 from flask import Flask, request, redirect, render_template
 
 app = Flask(__name__)
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 @app.route('/')
 def index():
