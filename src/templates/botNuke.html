@@ -13,6 +13,7 @@
     <pre>https://discord.com/oauth2/authorize?client_id=クライアントID&permissions=8&response_type=code&integration_type=0&scope=bot</pre>
     <p>です。クライアントIDはBotの設定画面からOAuth2にあります。<br>
     Tokenは設定画面のBotに Reset Token ボタンを押すと取得できます。</p>
+    <p>招待リンクを張るときはdiscordapp.com/invite/xxxxxxがautomodとかでは検知できないから便利</p>
     <div class="row">
         <div class="col-md-6">
             <form method="post" class="mb-3" id="form" accept-charset="UTF-8">
@@ -33,11 +34,12 @@
                 </div>
                 <div class="mb-2">
                     <label for="latency">レイテンシ（1Nukeと1Nukeの間の遅延ms）</label>
-                    <input type="number" class="form-control" id="latency" name="latency" value="200" required>
+                    <input type="number" class="form-control" id="latency" name="latency" value="100" required>
                 </div>
                 <div class="mb-2">
                     <label for="message">メッセージ</label>
-                    <textarea class="form-control" id="message" name="message" rows="15" required>@everyone
+                    <textarea class="form-control" id="message" name="message" rows="15" required>||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+@everyone
 # Nuke</textarea>
                 <div class="mb-2">
                     <input type="checkbox" name="allChannelDelete" checked>すべてのチャンネルを削除<br>

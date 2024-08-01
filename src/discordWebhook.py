@@ -1,4 +1,4 @@
-import traceback, requests, datetime, time
+import traceback, requests, datetime, random, string, time
 
 logs = {}
 stops = []
@@ -29,7 +29,8 @@ class DiscordWebhook:
                 return
             logs[logId] += f"{str(datetime.datetime.now())} Send WebhookNuke - "
             try:
-                response = self.send(message)
+                bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(12))
+                response = self.send(bMessage)
                 if response.status_code == 204:
                     logs[logId] += "Success"
                 else:
