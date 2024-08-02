@@ -28,7 +28,7 @@ class DiscordWebhook:
                 logs.pop(logId)
                 return
             try:
-                bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(7))
+                bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))
                 response = self.send(bMessage)
                 if response.status_code == 204:
                     logs[logId] += "[+]Success"
