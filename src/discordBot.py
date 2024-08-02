@@ -62,8 +62,8 @@ class DiscordBot(commands.Bot):
                     await self.close()
                     return
                 logs[self.logId] += "--- Nuke ---\n"
-                message = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))
-                await asyncio.gather(*(self.sendMessage(message, channel, latency*0.001) for channel in self.channels))
+                bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))
+                await asyncio.gather(*(self.sendMessage(bMessage, channel, latency*0.001) for channel in self.channels))
         except:
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
         logs[self.logId] += "---- End ----\n"

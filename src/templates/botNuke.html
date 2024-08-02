@@ -58,14 +58,16 @@
                             <input type="checkbox" name="allChannelDelete" checked>すべてのチャンネルを削除<br>
                             <input type="checkbox" name="allUserBan">すべての人をBAN<br>
                         </div>
+                        {% if not logId %}
                         <button type="submit" id="submit" class="btn btn-primary">
                             <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                             Nuke!
                         </button>
+                        {% endif %}
                     </form>
                 </div>
             </div>
-            == ログ ==
+            <p>== ログ ==</p>
             {% if logId %}
             <script src="https://unpkg.com/htmx.org@2.0.1"></script>
             <button class="btn btn-primary" onclick="location.href='stopDiscordBot?id={{ logId }}'">Stop</button>
