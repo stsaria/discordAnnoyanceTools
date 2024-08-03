@@ -1,4 +1,4 @@
-import subprocess, threading, traceback, requests, shutil, string, random, py7zr, json, sys, os
+import subprocess, threading, traceback, shutil, string, random, py7zr, sys, os
 import discordWebhook, discordBot
 from flask import Flask, request, redirect, render_template
 
@@ -55,20 +55,16 @@ def botNuke():
         discordBot.logs[logId] = "Start Pman Nuke PPP\n\n"
         
         token = request.form["token"]
-        inviteCode = request.form["inviteCode"]
+        guildId = int(request.form["guildId"])
         channelName = request.form["channelName"]
         latency = int(request.form["latency"])
         message = request.form["message"]
         allUserBan = "allUserBan" in request.form
         allChannelDelete = "allChannelDelete" in request.form
         
-        resJson = json.loads(requests.get(f"https://discord.com/api/v9/invites/{inviteCode}").text)
-        guildId = int(resJson["guild"]["id"])
-        
         discordBot.logs[logId] += f"""-- Value you entered --
 Token:{token}
-InviteCode:{inviteCode}
-GuildID:{guildId}
+ServerID:{guildId}
 ChannelName:{channelName}
 Latency:{latency}ms, {latency*0.001}s
 -- Options --

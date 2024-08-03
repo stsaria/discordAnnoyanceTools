@@ -23,7 +23,7 @@ class DiscordBot(commands.Bot):
             await user.ban(reason="Fuck Server User")
             logs[self.logId] += "[+]Success"
         except:
-            logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
+            logs[self.logId] += "-- Error --\n"
             logs[self.logId] += "[-]Failed"
         logs[self.logId] += f" | {str(datetime.datetime.now())} BanUser ID:{user.id} Name:{user.name}\n"
     async def deleteChannel(self, channel:discord.abc.GuildChannel):

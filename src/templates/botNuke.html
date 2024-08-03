@@ -37,8 +37,8 @@
                             </div>   
                         </div>
                         <div class="mb-2">
-                            <label for="inviteCode">招待コード(https://discord.gg/xxxxxxのxxxxxxのところ)</label>
-                            <input type="text" class="form-control" id="inviteCode" name="inviteCode" required>
+                            <label for="guildId">サーバーID</label>
+                            <input type="text" class="form-control" id="guildId" name="guildId" required>
                         </div>
                         <div class="mb-2">
                             <label for="channelName">チャンネル名</label>
@@ -86,12 +86,12 @@
         }
         document.getElementById('form').addEventListener('submit', function(event) {
             var tokenInput = document.getElementById("token");
-            var inviteCodeInput = document.getElementById("inviteCode");
+            var guildIdInput = document.getElementById("guildId");
             var channelNameInput = document.getElementById("channelName");
             var latencyInput = document.getElementById("latency");
             var messageInput = document.getElementById("message");
             var submitButton = document.getElementById("submit");
-            tokenInput.readOnly = inviteCodeInput.readOnly = channelNameInput.readOnly = latencyInput.readOnly = messageInput.readOnly = true;
+            tokenInput.readOnly = guildIdInput.readOnly = channelNameInput.readOnly = latencyInput.readOnly = messageInput.readOnly = true;
             submitButton.disabled = true;
             var spinner = this.querySelector('.spinner-border');
             spinner.classList.remove('d-none');
