@@ -71,6 +71,7 @@ class DiscordBot(commands.Bot):
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
         logs[self.logId] += "---- End ----\n"
         stops.append(self.logId)
+        await guild.leave()
         await self.close()
     async def on_ready(self):
         logs[self.logId] += f"ID:{self.user.id}, Name:{self.user.name}\n\n"
