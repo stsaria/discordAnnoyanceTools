@@ -1,4 +1,4 @@
-import subprocess, webbrowser, endpoints, platform, sys
+import subprocess, webbrowser, endpoints, platform, time, sys
 
 def main():
     windowsCmds = f"""pythonExec -m venv selfBot
@@ -23,6 +23,8 @@ cmd /c .\\selfBot\\Scripts\\activate.bat
         p = subprocess.Popen(cmd)
         if not cmd == cmds[-1].split(" "):
             p.communicate()
+        if cmd == cmds[1].split(" ")
+            time.sleep(3)
         else:
             print(2)
     
