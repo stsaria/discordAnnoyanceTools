@@ -6,10 +6,10 @@ cmd /c .\\selfBot\\Scripts\\activate.bat
 .\\selfBot\\Scripts\\pip.exe install -r requirementsSelfBot.txt
 .\\selfBot\\Scripts\\python.exe src/selfDiscordBot.py"""
     unixCmds = f"""pythonExec -m venv selfBot
-./selfBot/Scripts/activate
+./selfBot/bin/activate
 ./selfBot/bin/pip install -r requirementsSelfBot.txt
 ./selfBot/bin/python.exe src/selfDiscordBot.py"""
-    
+
     if platform.system() == "Windows":
         cmds = windowsCmds
     else:
