@@ -6,7 +6,6 @@ cmd /c .\\selfBot\\Scripts\\activate.bat
 .\\selfBot\\Scripts\\pip.exe install -r requirementsSelfBot.txt
 .\\selfBot\\Scripts\\python.exe src/selfDiscordBot.py"""
     unixCmds = f"""pythonExec -m venv selfBot
-sudo chmod -R 700 ./selfBot/
 ./selfBot/bin/activate
 ./selfBot/bin/pip install -r requirementsSelfBot.txt
 ./selfBot/bin/python src/selfDiscordBot.py"""
