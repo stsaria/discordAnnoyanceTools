@@ -23,7 +23,7 @@ cmd /c .\\selfBot\\Scripts\\activate.bat
         p = subprocess.Popen(cmd)
         if not cmd == cmds[-1].split(" "):
             p.communicate()
-        if cmd == cmds[1].split(" ")
+        if cmd == cmds[1].split(" "):
             time.sleep(3)
         else:
             print(2)
