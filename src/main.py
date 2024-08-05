@@ -20,12 +20,12 @@ cmd /c .\\selfBot\\Scripts\\activate.bat
         cmd = cmd.split(" ")
         if cmd[0] == "pythonExec":
             cmd[0] = sys.executable
-        p = subprocess.Popen(cmd)
-        if not cmd == cmds[-1].split(" "):
-            p.communicate()
         while True:
             if os.path.isfile(cmd[0]):
                 break
+        p = subprocess.Popen(cmd)
+        if not cmd == cmds[-1].split(" "):
+            p.communicate()
     
     port = 8080
     webbrowser.open(f"http://localhost:{port}")
