@@ -23,10 +23,9 @@ cmd /c .\\selfBot\\Scripts\\activate.bat
         p = subprocess.Popen(cmd)
         if not cmd == cmds[-1].split(" "):
             p.communicate()
-        if cmd == cmds[0].split(" "):
-            while True:
-                if os.path.isfile(cmd[0]):
-                    break
+        while True:
+            if os.path.isfile(cmd[0]):
+                break
     
     port = 8080
     webbrowser.open(f"http://localhost:{port}")
