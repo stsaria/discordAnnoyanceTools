@@ -18,9 +18,7 @@ sudo chmod -R 700 ./selfBot/
     
     cmds = cmds.split("\n")
     for cmd in cmds:
-        cmd = cmd.split(" ")
-        if cmd[0] == "pythonExec":
-            cmd[0] = sys.executable
+        cmd = cmd.split(" ").replace("pythonExec", sys.executable)
         while True:
             if os.path.isfile(cmd[0]):
                 break

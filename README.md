@@ -12,3 +12,4 @@ git clone https://github.com/stsaria/discordAnnoyanceTools
 ```
 start.bat
 ```
+※なんだかんだLinuxとかではrootじゃないと動かない
