@@ -9,7 +9,7 @@ cmd /c .\\selfBot\\Scripts\\activate.bat
 sudo chmod -R 700 ./selfBot/
 ./selfBot/bin/activate
 ./selfBot/bin/pip install -r requirementsSelfBot.txt
-./selfBot/bin/python.exe src/selfDiscordBot.py"""
+./selfBot/bin/python src/selfDiscordBot.py"""
 
     if platform.system() == "Windows":
         cmds = windowsCmds
