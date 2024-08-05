@@ -13,11 +13,13 @@
     <div class="bg"></div>
     <div class="container">
         <header class="header">
+            <div class="notification">
+                <img src="static/discordLogo.svg" class="notification-icon">
+                <span class="notification-count" id="notificationCount">0</span>
+            </div>
             <h1 class="title">Nuke</h1>
             <ul class="nav">
-                <li><a href="/botNuke">BotNuke</a></li>
-                <li><a href="/webhookNuke">WebhookNuke</a></li>
-                <li><a href="/grabberGenerator">GrabberGenerator</a></li>
+                <li><a href="/tools">Tools</a></li>
             </ul>
         </header>
         <div class="content">
@@ -33,7 +35,6 @@
                             <label for="token">Token</label>
                             <div class="position-relative">
                                 <input type="password" class="form-control" id="token" name="token" required>
-                                <span id="eyeIcon" class="bi bi-eye translate-middle position-absolute top-50 end-0" onclick="eyeToken();"></span>
                             </div>   
                         </div>
                         <div class="mb-2">
@@ -52,6 +53,7 @@
                             <label for="message">メッセージ</label>
                             <textarea class="form-control" id="message" name="message" rows="15" required>|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 @everyone
+/help
 # Nuke</textarea>
                         </div>
                         <div class="mb-2">
@@ -79,11 +81,6 @@
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script>
-        function eyeToken(){
-            $("#eyeIcon").toggleClass("bi-eye-slash bi-eye");
-            const type = $('#token').attr('type') === 'password' ? 'text' : 'password';
-            $('#token').attr('type', type);
-        }
         document.getElementById('form').addEventListener('submit', function(event) {
             var tokenInput = document.getElementById("token");
             var guildIdInput = document.getElementById("guildId");
