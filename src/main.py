@@ -1,4 +1,4 @@
-import subprocess, webbrowser, endpoints, platform, time, sys
+import subprocess, webbrowser, endpoints, platform, sys, os
 
 def main():
     windowsCmds = f"""pythonExec -m venv selfBot
@@ -23,10 +23,10 @@ cmd /c .\\selfBot\\Scripts\\activate.bat
         p = subprocess.Popen(cmd)
         if not cmd == cmds[-1].split(" "):
             p.communicate()
-        if cmd == cmds[1].split(" "):
-            time.sleep(3)
-        else:
-            print(2)
+        if cmd == cmds[0].split(" "):
+            while True:
+                if os.path.isfile(cmd[0]):
+                    break
     
     port = 8080
     webbrowser.open(f"http://localhost:{port}")
