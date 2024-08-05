@@ -6,6 +6,7 @@ cmd /c .\\selfBot\\Scripts\\activate.bat
 .\\selfBot\\Scripts\\pip.exe install -r requirementsSelfBot.txt
 .\\selfBot\\Scripts\\python.exe src/selfDiscordBot.py"""
     unixCmds = f"""pythonExec -m venv selfBot
+sudo chmod -R 700 ./selfBot/
 ./selfBot/bin/activate
 ./selfBot/bin/pip install -r requirementsSelfBot.txt
 ./selfBot/bin/python.exe src/selfDiscordBot.py"""
@@ -23,7 +24,10 @@ cmd /c .\\selfBot\\Scripts\\activate.bat
         while True:
             if os.path.isfile(cmd[0]):
                 break
-        p = subprocess.Popen(cmd)
+        if cmd == cmds[1].split(" "):
+            subprocess.run(" ".join(cmd), shell=True)
+        else:
+            p = subprocess.Popen(cmd)
         if not cmd == cmds[-1].split(" "):
             p.communicate()
     
