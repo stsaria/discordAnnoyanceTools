@@ -44,8 +44,8 @@ class DiscordBot(discord.Client):
             await channel.send(message)
             logs[self.logId] += "[+]Success"
         except:
-            logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
             logs[self.logId] += "[-]Failed"
+            self.channels.remove(channel)
         logs[self.logId] += f" | {str(datetime.datetime.now())} SendMessage ID:{channel.id}\n"
         await asyncio.sleep(latencyMs)
     async def banAllUser(self, guild:discord.Guild):

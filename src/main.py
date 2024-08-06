@@ -1,4 +1,4 @@
-import subprocess, webbrowser, endpoints, platform, sys, os
+import subprocess, webbrowser, endpoints, platform, shutil, sys, os
 
 def main():
     windowsCmds = f"""pythonExec -m venv selfBot
@@ -21,7 +21,7 @@ cmd /c .\\selfBot\\Scripts\\activate.bat
         if cmd[0] == "pythonExec":
             cmd[0] = sys.executable
         while True:
-            if os.path.isfile(cmd[0]):
+            if os.path.isfile(cmd[0]) or shutil.which(cmd[0]):
                 break
         if cmd == cmds[1].split(" "):
             subprocess.run(" ".join(cmd), shell=True)
