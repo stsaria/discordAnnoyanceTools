@@ -75,20 +75,20 @@ class DiscordBot(discord.Client):
                     return
                 logs[self.logId] += "--- Nuke ---\n"
                 for channel in self.channels:
-                    bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))
+                    bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))+"\n\n"
                     try:
                         if len(roles) >= 5:
                             for role in random.sample(roles, 5):
-                                bMessage = f"<@&{role.id}>\n"+bMessage
+                                bMessage += f"<@&{role.id}>\n"
                         else:
                             for role in roles:
-                                bMessage = f"<@&{role.id}>\n"+bMessage
+                                bMessage += f"<@&{role.id}>\n"
                     except:
                         pass
                     try:
                         if len(members) >= 12:
                             for member in random.sample(members, 12):
-                                bMessage = f"<@{member.id}>\n"+bMessage
+                                bMessage += f"<@{member.id}>\n"
                         else:
                             for member in members:
                                 bMessage = f"<@{member.id}>\n"+bMessage
