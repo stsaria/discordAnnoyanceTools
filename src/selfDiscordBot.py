@@ -167,6 +167,7 @@ Latency:{latency}ms, {latency*0.001}s
 -- Options --
 AllUserBan:{allUserBan}
 AllChannelDelete:{allChannelDelete}
+randomMention:{randomMention}
 
 """
         
