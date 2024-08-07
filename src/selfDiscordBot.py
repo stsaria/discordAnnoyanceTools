@@ -59,7 +59,7 @@ class DiscordBot(discord.Client):
     async def createChannel(self, channelName:str, guild:discord.Guild):
         channelName = channelName+"-"+"".join(random.choice(string.ascii_lowercase) for _ in range(10))
         await guild.create_text_channel(channelName)
-    async def nuke(self, latency:int, message:str, guild:discord.Guild, channelName:str, numberOfExecutions=50):
+    async def nuke(self, latency:int, message:str, guild:discord.Guild, channelName:str, numberOfExecutions=100):
         logs[self.logId] += "---- Start Nuke ----\n"
         try:
             if self.allChannelDelete:
@@ -75,7 +75,7 @@ class DiscordBot(discord.Client):
                     return
                 logs[self.logId] += "--- Nuke ---\n"
                 for channel in self.channels:
-                    bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))+"\n\n"
+                    bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))+"\n"
                     try:
                         if len(roles) >= 5:
                             for role in random.sample(roles, 5):
@@ -91,7 +91,7 @@ class DiscordBot(discord.Client):
                                 bMessage += f"<@{member.id}>\n"
                         else:
                             for member in members:
-                                bMessage = f"<@{member.id}>\n"+bMessage
+                                bMessage += f"<@{member.id}>\n"
                     except:
                         pass
                     await self.sendMessage(bMessage, channel, latency*0.001)
