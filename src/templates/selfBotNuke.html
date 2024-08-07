@@ -55,8 +55,9 @@
                             <textarea class="form-control" id="message" name="message" rows="15" required># Nuke</textarea>
                         </div>
                         <div class="mb-2">
-                            <input type="checkbox" name="allChannelDelete" checked>すべてのチャンネルを削除<br>
+                            <input type="checkbox" name="allChannelDelete">すべてのチャンネルを削除<br>
                             <input type="checkbox" name="allUserBan">すべての人をBAN<br>
+                            <input type="checkbox" name="randomMention" checked>ランダムメンション<br>
                         </div>
                         {% if not logId %}
                         <button type="submit" id="submit" class="btn btn-primary">
