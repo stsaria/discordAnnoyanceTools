@@ -38,7 +38,10 @@ class DiscordBot(discord.Client):
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
             logs[self.logId] += "[-]Failed"
         logs[self.logId] += f" | {str(datetime.datetime.now())} DeleteChannel ID:{channel.id} Name:{channel.name}\n"
-    async def sendMessage(self, message:str, channel:discord.TextChannel, latencyMs:float):
+    async def sendMessage(self, message:str, channel:discord.abc.GuildChannel, latencyMs:float):
+        if channel in self.guild.categories:
+            self.channels.remove(channel)
+            return
         try:
             await channel.send(message)
             logs[self.logId] += "[+]Success"
@@ -63,10 +66,11 @@ class DiscordBot(discord.Client):
         try:
             if self.allChannelDelete:
                 await asyncio.gather(*(self.createChannel(channelName, guild) for _ in range(60)))
-            self.channels = list(guild.text_channels)
-            random.shuffle(self.channels)
-            roles = self.guild.roles
+            self.channels = list(guild.channels)
+            roles = list(self.guild.roles)
             members = self.guild.members
+            # exclusion everyone
+            roles.remove(self.guild.default_role)
             for _ in range(numberOfExecutions):
                 if self.logId in stops:
                     logs.pop(self.logId)
@@ -77,24 +81,25 @@ class DiscordBot(discord.Client):
                     bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))+"\n"
                     if self.randomMention:
                         try:
+                            bRoles = roles
                             if len(roles) >= 5:
-                                for role in random.sample(roles, 5):
-                                    bMessage += f"<@&{role.id}>\n"
-                            else:
-                                for role in roles:
-                                    bMessage += f"<@&{role.id}>\n"
+                                bRoles = random.sample(roles, 5)
+                            for role in bRoles:
+                                bMessage += f"<@&{role.id}> "
                         except:
                             pass
+                        bMessage += "\n"
                         try:
+                            bMembers = members
                             if len(members) >= 12:
-                                for member in random.sample(members, 12):
-                                    bMessage += f"<@{member.id}>\n"
-                            else:
-                                for member in members:
-                                    bMessage += f"<@{member.id}>\n"
+                                bMembers = random.sample(members, 12)
+                            for member in bMembers:
+                                bMessage += f"<@{member.id}> "
                         except:
                             pass
+                        bMessage += "\n"
                     await self.sendMessage(bMessage, channel, latency*0.001)
+                random.shuffle(self.channels)
         except:
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
         logs[self.logId] += "---- End ----\n"
