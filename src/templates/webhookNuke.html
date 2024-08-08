@@ -65,6 +65,14 @@
         </div>
     </div>
     <script>
+        var message = $("#message");
+        message.ready(function(){
+            message.val(localStorage.getItem("message"));
+        });
+        message.keyup(function(){
+            var value = message.val();
+            localStorage.setItem("message", value);
+        });
         document.addEventListener('DOMContentLoaded', function() {
             var addButton = document.getElementById('add-item');
             var container = document.getElementById('items-container');

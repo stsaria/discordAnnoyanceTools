@@ -20,7 +20,7 @@ class DiscordBot(discord.Client):
         self.nukeLatency = latency
         self.message = message
         if mode == 0:
-            self.allUserBan, self.allChannelDelete, self.randomMention = option
+            self.allUserBan, self.allChannelDelete, self.randomMention, self.exclusionServerIds = option
         self.mode = mode
     async def banUser(self, user:discord.Member):
         try:
@@ -78,6 +78,8 @@ class DiscordBot(discord.Client):
                     return
                 logs[self.logId] += "--- Nuke ---\n"
                 for channel in self.channels:
+                    if str(channel.id) in self.exclusionServerIds:
+                        continue
                     bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))+"\n"
                     if self.randomMention:
                         try:
@@ -155,15 +157,16 @@ def nuke():
         channelName = request.form["channelName"]
         latency = int(request.form["latency"])
         message = request.form["message"]
+        exclusionServerIds = request.form["exclusionServerIds"].split(",")
         allUserBan = "allUserBan" in request.form
         allChannelDelete = "allChannelDelete" in request.form
         randomMention = "randomMention" in request.form
         
         logs[logId] += f"""-- Value you entered --
-Tokens:{tokens}
 ServerID:{guildId}
 ChannelName:{channelName}
 Latency:{latency}ms, {latency*0.001}s
+exclusionServerIDs:{exclusionServerIds}
 -- Options --
 AllUserBan:{allUserBan}
 AllChannelDelete:{allChannelDelete}
@@ -172,7 +175,7 @@ randomMention:{randomMention}
 """
         
         for token in tokens:
-            bot = DiscordBot(logId, token, guildId, channelName, latency, message, [allUserBan, allChannelDelete, randomMention], 0)
+            bot = DiscordBot(logId, token, guildId, channelName, latency, message, [allUserBan, allChannelDelete, randomMention, exclusionServerIds], 0)
             botThread = threading.Thread(target=bot.runBot, daemon=True)
             botThread.start()
         return render_template('selfBotNuke.html', logId=logId)

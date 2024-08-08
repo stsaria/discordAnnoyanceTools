@@ -78,6 +78,14 @@
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script>
+        var message = $("#message");
+        message.ready(function(){
+            message.val(localStorage.getItem("message"));
+        });
+        message.keyup(function(){
+            var value = message.val();
+            localStorage.setItem("message", value);
+        });
         document.getElementById('form').addEventListener('submit', function(event) {
             var tokenInput = document.getElementById("token");
             var guildIdInput = document.getElementById("guildId");
