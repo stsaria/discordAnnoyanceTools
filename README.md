@@ -1,4 +1,7 @@
 # Discordの荒らし等のツール
+<a href="https://xn--68j5e377y.com/" target="_blank" rel="noopener noreferrer"><img src="src/static/ctkpaarr.webp" width="30%"></a>
+荒らし共栄圏に参加
+
 ※このプログラムは、私が勉強用として作ったものですので、これで荒らしして特定とかされても責任を負うことはないですよ〜
 ちなみにLinuxはあんまりちゃんと動かないです
 ## ツールリスト

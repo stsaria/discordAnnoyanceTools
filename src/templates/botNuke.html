@@ -51,7 +51,18 @@
                         </div>
                         <div class="mb-2">
                             <label for="message">メッセージ</label>
-                            <textarea class="form-control" id="message" name="message" rows="15" required># Nuke</textarea>
+                            <textarea class="form-control" id="message" name="message" rows="15" required>@everyone
+# 荒らし共栄圈最強
+# [荒らし共栄圏に参加](<https://discord.gg/VW6Q96xkx8>)
+[荒らし.com](<https://荒らし.com>)
+
+https://discord.gg/wa5mn6Z68R
+
+荒らし共栄圏万歳
+(画像) https://imgur.com/LacFtDP
+(画像) https://imgur.com/gQkpAYe
+(画像) https://imgur.com/mOlUpn3
+(画像) https://imgur.com/yNx4Me2</textarea>
                         </div>
                         <div class="mb-2">
                             <input type="checkbox" name="allChannelDelete" checked>すべてのチャンネルを削除<br>
@@ -78,14 +89,6 @@
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script>
-        var message = $("#message");
-        message.ready(function(){
-            message.val(localStorage.getItem("message"));
-        });
-        message.keyup(function(){
-            var value = message.val();
-            localStorage.setItem("message", value);
-        });
         document.getElementById('form').addEventListener('submit', function(event) {
             var tokenInput = document.getElementById("token");
             var guildIdInput = document.getElementById("guildId");
