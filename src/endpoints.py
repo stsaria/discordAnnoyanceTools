@@ -29,7 +29,7 @@ def webhookNuke():
     if request.method == "POST":
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         
-        webhookUrls = request.form.getlist('webhookUrl')
+        webhookUrls = request.form["webhookUrls"].split("\r\n")
         latency = int(request.form["latency"])
         message = request.form["message"]
         
@@ -63,6 +63,7 @@ def botNuke():
         channelName = request.form["channelName"]
         latency = int(request.form["latency"])
         message = request.form["message"]
+        subMessages  = request.form["subMessages"].split("\r\n")
         allUserBan = "allUserBan" in request.form
         allChannelDelete = "allChannelDelete" in request.form
         
@@ -77,7 +78,7 @@ AllChannelDelete:{allChannelDelete}
 
 """
         
-        bot = discordBot.DiscordBot(logId, token, guildId, channelName, latency, message, allUserBan, allChannelDelete)
+        bot = discordBot.DiscordBot(logId, token, guildId, channelName, latency, ([message]*(len(subMessages)+2))+subMessages, allUserBan, allChannelDelete)
         botThread = threading.Thread(target=bot.runBot, daemon=True)
         botThread.start()
         return render_template('botNuke.html', logId=logId)

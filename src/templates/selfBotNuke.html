@@ -25,19 +25,13 @@
         </header>
         <div class="content">
             <p>招待リンクを張るときはdiscordapp.com/invite/xxxxxxがautomodとかでは検知できないから便利<br>
-            Banやチャンネル削除は権限がないとできないので、管理者がない場合は403になります。</p>
+            Banやチャンネル削除は権限がないとできないので、権限がない場合は403になります。</p>
             <div class="row">
                 <div class="col-md-6">
                     <form method="post" class="mb-3" id="form" accept-charset="UTF-8">
                         <div class="mb-2">
-                            <label for="token">Tokens</label>
-                            <div id="items-container">
-                                <div class="item-input">
-                                    <input type="text" name="token" class="form-control" placeholder="OTAxxxxxxxxxxxxxxxxxxxxxxxxx" required>
-                                    <button type="button" class="btn btn-danger remove-btn">削除</button>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-secondary" id="add-item">追加</button>   
+                            <label for="tokens">Tokens</label>
+                            <textarea class="form-control" id="tokens" name="tokens" rows="6" placeholder="OTAxxxxxxxxxxxxxxxxxxxxxxxxx" required></textarea>
                         </div>
                         <div class="mb-2">
                             <label for="guildId">サーバーID</label>
@@ -53,8 +47,7 @@
                         </div>
                         <div class="mb-2">
                             <label for="message">メッセージ</label>
-                            <textarea class="form-control" id="message" name="message" rows="15" required>@everyone
-# 荒らし共栄圈最強
+                            <textarea class="form-control" id="message" name="message" rows="15" required># 荒らし共栄圈最強
 # [荒らし共栄圏に参加](<https://discordapp.com\.\invite\VW6Q96xkx8>)
 [荒らし.com](<https://荒らし.com>)
 
@@ -64,7 +57,16 @@ https://discordapp.com\.\invite\wa5mn6Z68R
 (画像) https://imgur.com/LacFtDP
 (画像) https://imgur.com/gQkpAYe
 (画像) https://imgur.com/mOlUpn3
-(画像) https://imgur.com/yNx4Me2</textarea>
+(画像) https://imgur.com/yNx4Me2
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||</textarea>
+                        </div>
+                        <div class="mb-2">
+                            <label for="message">メッセージ2(コマンド荒らしなど　改行で分ける　ことができます !userId!はサーバーのユーザーIDに変わります)</label>
+                            <textarea class="form-control" id="subMessages" name="subMessages" rows="7" required>/help
+!help
+/short https://discordapp.com\.\invite\wa5mn6Z68R
+!short https://discordapp.com\.\invite\wa5mn6Z68R
+!role !userId! https://discord.gg/wa5mn6Z68R</textarea>
                         </div>
                         <div class="mb-2">
                             <label for="exclusionServerIds">除外チャンネルID（カンマ区切り）</label>
@@ -96,43 +98,17 @@ https://discordapp.com\.\invite\wa5mn6Z68R
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var addButton = document.getElementById('add-item');
-            var container = document.getElementById('items-container');
-
-            addButton.addEventListener('click', function() {
-                var newItemDiv = document.createElement('div');
-                newItemDiv.className = 'item-input';
-                newItemDiv.innerHTML = `
-                    <input type="text" name="token" class="form-control" placeholder="OTAxxxxxxxxxxxxxxxxxxxxxxxxx" required>
-                    <button type="button" class="btn btn-danger remove-btn">削除</button>
-                `;
-                container.appendChild(newItemDiv);
-                newItemDiv.querySelector('.remove-btn').addEventListener('click', function() {
-                    newItemDiv.remove();
-                });
-            });
-            container.querySelectorAll('.remove-btn').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    btn.parentElement.remove();
-                });
-            });
-        });
-        function eyeToken(){
-            $("#eyeIcon").toggleClass("bi-eye-slash bi-eye");
-            const type = $('#token').attr('type') === 'password' ? 'text' : 'password';
-            $('#token').attr('type', type);
-        }
         document.getElementById('form').addEventListener('submit', function(event) {
-            var tokenInput = document.getElementById("token");
+            var tokensInput = document.getElementById("tokens");
             var guildIdInput = document.getElementById("guildId");
             var channelNameInput = document.getElementById("channelName");
             var latencyInput = document.getElementById("latency");
             var messageInput = document.getElementById("message");
+            var subMessagesInput = document.getElementById("subMessages");
             var exclusionServerIds = document.getElementById("exclusionServerIds");
             var submitButton = document.getElementById("submit");
             localStorage.setItem("message", messageInput.ariaValueMax);
-            tokenInput.readOnly = guildIdInput.readOnly = channelNameInput.readOnly = latencyInput.readOnly = messageInput.readOnly = exclusionServerIds.readOnly = true;
+            tokenInput.readOnly = guildIdInput.readOnly = channelNameInput.readOnly = latencyInput.readOnly = messageInput.readOnly = subMessages.readOnly = InputexclusionServerIds.readOnly = true;
             submitButton.disabled = true;
             var spinner = this.querySelector('.spinner-border');
             spinner.classList.remove('d-none');

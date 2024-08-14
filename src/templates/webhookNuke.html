@@ -26,14 +26,8 @@
                 <div class="col-md-12">
                     <form method="post" class="mb-3" id="form" accept-charset="UTF-8">
                         <div class="mb-2">
-                            <label for="webhookUrl">WebHook URLs</label>
-                            <div id="items-container">
-                                <div class="item-input">
-                                    <input type="text" name="webhookUrl" class="form-control" placeholder="https://discord.com/api/webhooks/*************/^^^^^^^^^^^^^^" required>
-                                    <button type="button" class="btn btn-danger remove-btn">削除</button>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-secondary" id="add-item">追加</button>
+                            <label for="webhookUrls">WebHook URLs</label>
+                            <textarea class="form-control" id="webhookUrls" name="webhookUrls" rows="6" placeholder="https://discord.com/api/webhooks/*************/^^^^^^^^^^^^^^" required></textarea>
                         </div>
                         <div class="mb-2">
                             <label for="latency">レイテンシ（1Nukeと1Nukeの間の遅延ms）</label>
@@ -51,7 +45,8 @@ https://discordapp.com\.\invite\wa5mn6Z68R
 (画像) https://imgur.com/LacFtDP
 (画像) https://imgur.com/gQkpAYe
 (画像) https://imgur.com/mOlUpn3
-(画像) https://imgur.com/yNx4Me2</textarea>
+(画像) https://imgur.com/yNx4Me2
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||</textarea>
                         </div>
                         {% if not logId %}
                         <button type="submit" id="submit" class="btn btn-primary">
@@ -73,37 +68,12 @@ https://discordapp.com\.\invite\wa5mn6Z68R
         </div>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var addButton = document.getElementById('add-item');
-            var container = document.getElementById('items-container');
-
-            addButton.addEventListener('click', function() {
-                var newItemDiv = document.createElement('div');
-                newItemDiv.className = 'item-input';
-                newItemDiv.innerHTML = `
-                    <input type="text" name="webhookUrl" class="form-control" placeholder="https://discord.com/api/webhooks/*************/^^^^^^^^^^^^^^" required>
-                    <button type="button" class="btn btn-danger remove-btn">削除</button>
-                `;
-                container.appendChild(newItemDiv);
-                newItemDiv.querySelector('.remove-btn').addEventListener('click', function() {
-                    newItemDiv.remove();
-                });
-            });
-            container.querySelectorAll('.remove-btn').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    btn.parentElement.remove();
-                });
-            });
-        });
         document.getElementById('form').addEventListener('submit', function(event) {
-            var webhookUrlsInputs = document.querySelectorAll("input[name='webhookUrl']");
+            var webhookUrlsInput = document.querySelectorAll("webhookUrls");
             var latencyInput = document.getElementById("latency");
             var messageInput = document.getElementById("message");
             var submitButton = document.getElementById("submit");
-            webhookUrlsInputs.forEach(input => input.readOnly = true);
-            latencyInput.readOnly = true;
-            messageInput.readOnly = true;
-            submitButton.disabled = true;
+            latencyInput.readOnly = messageInput.readOnly = webhookUrlsInput.readOnly = submitButton.disabled = true;
             var spinner = this.querySelector('.spinner-border');
             spinner.classList.remove('d-none');
         });
