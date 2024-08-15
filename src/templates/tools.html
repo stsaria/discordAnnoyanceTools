@@ -31,7 +31,7 @@
                 <li><a href="grabberGenerator">GrabberGenerator</a></li>
                 <br>
                 <h3>SelfBot</h3>
-                <li><a href="http://localhost:8081/nuke">SelfBotNuke</a></li>
+                <li><a href="http://localhost:8081/nuke" id="bLink">SelfBotNuke</a></li>
             </ul>
         </div>
         <h4 style="text-align: center; margin-top: 20px;">Made by Saria and Acted</h4>
@@ -45,6 +45,8 @@
             count = (count + 1) % 201; // 200を超えたらリセット
             notificationCount.textContent = count;
         }, 50);
+        const linkElement = document.getElementById('bLink');
+        linkElement.href = `http://${window.location.hostname}:8081/nuke`;
     </script>
 </body>
 </html>
