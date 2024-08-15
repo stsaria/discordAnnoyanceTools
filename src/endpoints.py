@@ -1,12 +1,29 @@
-import subprocess, threading, traceback, shutil, string, random, py7zr, sys, os
+import subprocess, threading, traceback, requests, shutil, string, random, py7zr, sys, os
 import discordWebhook, discordBot
 from flask import Flask, request, redirect, render_template
 
 app = Flask(__name__)
 
+def getIpAddresses():
+    ipv4Url = "https://api.ipify.org?format=json"
+    ipv6Url = "https://api64.ipify.org?format=json"
+
+    try:
+        ipv4Response = requests.get(ipv4Url)
+        ipv4Address = ipv4Response.json()["ip"]
+    except requests.RequestException:
+        ipv4Address = "対応していません"
+    
+    try:
+        ipv6Response = requests.get(ipv6Url)
+        ipv6Address = ipv6Response.json()['ip']
+    except requests.RequestException:
+        ipv6Address = "対応していません"
+    return ipv4Address, ipv6Address
+
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', ip=getIpAddresses())
 
 @app.route('/tools')
 def tools():
@@ -63,7 +80,6 @@ def botNuke():
         channelName = request.form["channelName"]
         latency = int(request.form["latency"])
         message = request.form["message"]
-        subMessages  = request.form["subMessages"].split("\r\n")
         allUserBan = "allUserBan" in request.form
         allChannelDelete = "allChannelDelete" in request.form
         
@@ -78,7 +94,7 @@ AllChannelDelete:{allChannelDelete}
 
 """
         
-        bot = discordBot.DiscordBot(logId, token, guildId, channelName, latency, ([message]*(len(subMessages)+2))+subMessages, allUserBan, allChannelDelete)
+        bot = discordBot.DiscordBot(logId, token, guildId, channelName, latency, [message], allUserBan, allChannelDelete)
         botThread = threading.Thread(target=bot.runBot, daemon=True)
         botThread.start()
         return render_template('botNuke.html', logId=logId)

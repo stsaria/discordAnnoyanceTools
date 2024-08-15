@@ -64,14 +64,6 @@ https://discord.gg/wa5mn6Z68R
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||</textarea>
                         </div>
                         <div class="mb-2">
-                            <label for="subMessages">メッセージ2(コマンド荒らしなど　改行で分けることができます !userId!はサーバーのユーザーIDに変わります)</label>
-                            <textarea class="form-control" id="subMessages" name="subMessages" rows="7" required>/help
-!help
-/short https://discordapp.com\.\invite\wa5mn6Z68R
-!short https://discordapp.com\.\invite\wa5mn6Z68R
-!role !userId! https://discord.gg/wa5mn6Z68R</textarea>
-                        </div>
-                        <div class="mb-2">
                             <input type="checkbox" name="allChannelDelete" checked>すべてのチャンネルを削除<br>
                             <input type="checkbox" name="allUserBan">すべての人をBAN<br>
                         </div>
@@ -102,9 +94,8 @@ https://discord.gg/wa5mn6Z68R
             var channelNameInput = document.getElementById("channelName");
             var latencyInput = document.getElementById("latency");
             var messageInput = document.getElementById("message");
-            var subMessagesInput = document.getElementById("subMessages");
             var submitButton = document.getElementById("submit");
-            tokenInput.readOnly = guildIdInput.readOnly = channelNameInput.readOnly = latencyInput.readOnly = messageInput.readOnly = subMessages.readOnly = true;
+            tokenInput.readOnly = guildIdInput.readOnly = channelNameInput.readOnly = latencyInput.readOnly = messageInput.readOnly = true;
             submitButton.disabled = true;
             var spinner = this.querySelector('.spinner-border');
             spinner.classList.remove('d-none');
