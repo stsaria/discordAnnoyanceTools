@@ -115,12 +115,9 @@ class DiscordBot(discord.Client):
                             bMessage += "\n"
                         await self.sendMessage(bMessage, channel, latency*0.001)
                 random.shuffle(self.channels)
-        except:
-            logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
-        try:
             await guild.leave()
         except:
-            pass
+            logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
         logs[self.logId] += "---- End ----\n"
     async def on_ready(self):
         logs[self.logId] += f"Start Client - Token:{base64.b64encode(str(self.user.id).encode()).decode()}, ID:{self.user.id}, Name:{self.user.name}\n"

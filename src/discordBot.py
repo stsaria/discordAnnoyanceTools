@@ -77,13 +77,10 @@ class DiscordBot(commands.Bot):
                         bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))
                     bMessage = bMessage.replace("!userId!", str(random.choice(guild.members).id))
                     await asyncio.gather(*(self.sendMessage(bMessage, channel, latency*0.001) for channel in self.channels))
+            await guild.leave()
         except:
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
         logs[self.logId] += "---- End ----\n"
-        try:
-            guild.leave()
-        except:
-            pass
         await self.close()
     async def on_ready(self):
         logs[self.logId] += f"ID:{self.user.id}, Name:{self.user.name}\n\n"
