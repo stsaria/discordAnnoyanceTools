@@ -19,7 +19,7 @@ class DiscordBot(discord.Client):
         self.nukeLatency = latency
         self.messages = messages
         if mode == 0:
-            self.allUserBan, self.allChannelDelete, self.randomMention, self.exclusionServerIds, self.subMessages = option
+            self.allUserBan, self.allChannelDelete, self.randomMention, self.exclusionServerIds = option
         self.mode = mode
     def isEnableToken(self, token:str):
         if not token: return False
@@ -54,7 +54,10 @@ class DiscordBot(discord.Client):
             logs[self.logId] += "[+]Success"
         except Exception as e:
             logs[self.logId] += f"[-]Failed {e}"
-            self.channels.remove(channel)
+            try:
+                self.channels.remove(channel)
+            except:
+                pass
         logs[self.logId] += f" - {str(datetime.datetime.now())} SendMessage ID:{channel.id}\n"
         await asyncio.sleep(latencyMs)
     async def banAllUser(self, guild:discord.Guild):
@@ -115,7 +118,7 @@ class DiscordBot(discord.Client):
         except:
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
         try:
-            guild.leave()
+            await guild.leave()
         except:
             pass
         logs[self.logId] += "---- End ----\n"
