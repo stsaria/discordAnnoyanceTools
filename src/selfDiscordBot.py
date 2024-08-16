@@ -47,7 +47,10 @@ class DiscordBot(discord.Client):
         logs[self.logId] += f" - {str(datetime.datetime.now())} DeleteChannel ID:{channel.id} Name:{channel.name}\n"
     async def sendMessage(self, message:str, channel:discord.abc.GuildChannel, latencyMs:float):
         if channel in self.guild.categories:
-            self.channels.remove(channel)
+            try:
+                self.channels.remove(channel)
+            except:
+                pass
             return
         try:
             await channel.send(message)
