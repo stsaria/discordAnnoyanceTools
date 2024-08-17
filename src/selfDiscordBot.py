@@ -4,6 +4,7 @@ from flask import Flask, request, redirect, render_template
 app = Flask(__name__)
 
 logs = {}
+logIdInfos = {}
 stops = []
 discordApiBaseUrl = "https://discord.com/api/v9"
 
@@ -130,6 +131,8 @@ class DiscordBot(discord.Client):
                             except:
                                 pass
                             bMessage += "\n"
+                        if message != messages[0]:
+                            bMessage = message
                         await self.sendMessage(bMessage, channel, latency*0.001)
                 random.shuffle(self.channels)
             await guild.leave()
@@ -139,10 +142,10 @@ class DiscordBot(discord.Client):
     async def on_ready(self):
         logs[self.logId] += f"Start Client - Token:{base64.b64encode(str(self.user.id).encode()).decode()}, ID:{self.user.id}, Name:{self.user.name}\n"
         self.guild = self.get_guild(self.guildId)
+        if not self.guild:
+            logs[self.logId] += f"Error: The server you entered has not been joined by a bot - ID:{self.user.id}\n"
+            return
         if self.mode == 0:
-            if not self.guild:
-                logs[self.logId] += f"Error: The server you entered has not been joined by a bot - ID:{self.user.id}\n"
-                return
             try:
                 i = self.guild.get_member(self.user.id)
                 await i.edit(nick="឵᠎")
@@ -153,12 +156,17 @@ class DiscordBot(discord.Client):
             if self.allChannelDelete:
                 await self.deleteAllChannel(self.guild)
             await self.nuke(self.nukeLatency, self.messages, self.guild, self.channelName)
+        elif self.mode == 1:
+            try:
+                await self.guild.leave()
+            except:
+                pass
     async def on_message(self, message):
         if message.author.bot:
             return
     def runBot(self):
         try:
-            apis = DiscordApis(self.token)
+            apis = DiscordApis(self.logId, self.token)
             if not apis.getUserInfo()[0]:
                 logs[self.logId] += f"Error: invalid token - {self.token}\n"
                 return
@@ -175,7 +183,12 @@ def getLog():
 
 @app.route('/stop', methods=["GET"])
 def stop():
-    stops.append(request.args.get("id"))
+    logId = request.args.get("id")
+    for token in logIdInfos[logId][0]:
+        bot = DiscordBot(logId, token, logIdInfos[logId][1], None, None, None, None, 1)
+        botThread = threading.Thread(target=bot.runBot, daemon=True)
+        botThread.start()
+    stops.append(logId)
     return redirect('nuke')
 
 @app.route('/joinGuild', methods=["GET", "POST"])
@@ -215,6 +228,8 @@ def nuke():
         allUserBan = "allUserBan" in request.form
         allChannelDelete = "allChannelDelete" in request.form
         randomMention = "randomMention" in request.form
+        
+        logIdInfos[logId] = [tokens, guildId]
         
         logs[logId] += f"""-- Value you entered --
 Tokens:{tokens}
