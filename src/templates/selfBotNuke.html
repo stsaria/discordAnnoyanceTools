@@ -31,7 +31,7 @@
                     <form method="post" class="mb-3" id="form" accept-charset="UTF-8">
                         <div class="mb-2">
                             <label for="tokens">Tokens</label>
-                            <textarea class="form-control" id="tokens" name="tokens" rows="6" placeholder="OTAxxxxxxxxxxxxxxxxxxxxxxxxx" required></textarea>
+                            <textarea class="form-control" id="tokens" name="tokens" oninput="saveContent()" rows="6" placeholder="OTAxxxxxxxxxxxxxxxxxxxxxxxxx" required></textarea>
                         </div>
                         <div class="mb-2">
                             <label for="guildId">サーバーID</label>
@@ -110,7 +110,6 @@ https://discordapp.com\.\invite\wa5mn6Z68R
             var subMessagesInput = document.getElementById("subMessages");
             var exclusionServerIds = document.getElementById("exclusionServerIds");
             var submitButton = document.getElementById("submit");
-            localStorage.setItem("message", messageInput.ariaValueMax);
             tokenInput.readOnly = guildIdInput.readOnly = channelNameInput.readOnly = latencyInput.readOnly = messageInput.readOnly = subMessages.readOnly = InputexclusionServerIds.readOnly = true;
             submitButton.disabled = true;
             var spinner = this.querySelector('.spinner-border');
@@ -119,6 +118,18 @@ https://discordapp.com\.\invite\wa5mn6Z68R
 
         let count = 0;
         const notificationCount = document.getElementById('notificationCount');
+
+        function saveContent() {
+            const content = document.getElementById('tokens').value;
+            localStorage.setItem('tokens', content);
+        }
+        function loadContent() {
+            const savedContent = localStorage.getItem('tokens');
+            if (savedContent !== null) {
+                document.getElementById('tokens').value = savedContent;
+            }
+        }
+        window.onload = loadContent;
 
         setInterval(() => {
             count = (count + 1) % 201; // 200を超えたらリセット

