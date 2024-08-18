@@ -91,6 +91,8 @@ class DiscordBot(discord.Client):
         await guild.create_text_channel(channelName)
     async def oneNuke(self, messages:list[str], guild:discord.Guild, channel:discord.abc.GuildChannel, randomMention:bool, roles:list[discord.Role], members:list[discord.Member]):
         for message in messages:
+            if message == "":
+                continue
             bMessage = message
             if message == messages[0]:
                 bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))+"\n"
