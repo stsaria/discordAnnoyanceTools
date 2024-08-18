@@ -1,6 +1,8 @@
 import traceback, threading, requests, datetime, asyncio, discord, random, string, base64, json
+import Proxy
 from flask import Flask, request, redirect, render_template
 
+proxy = Proxy.Proxy("proxy.txt")
 app = Flask(__name__)
 
 logs = {}
@@ -204,6 +206,7 @@ def stop():
 @app.route('/joinGuild', methods=["GET", "POST"])
 def joinGuild():
     if request.method == "POST":
+        proxy.getProxy()
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         logs[logId] = "Start Pman Joiner PPP\n\n"
         
@@ -225,6 +228,7 @@ def joinGuild():
 @app.route('/channelNuke', methods=["GET", "POST"])
 def channelNuke():
     if request.method == "POST":
+        proxy.getProxy()
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         logs[logId] = "Start Pman Nuke PPP\n\n"
         
@@ -257,6 +261,7 @@ RandomMention:{randomMention}
 @app.route('/nuke', methods=["GET", "POST"])
 def nuke():
     if request.method == "POST":
+        proxy.getProxy()
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         logs[logId] = "Start Pman Nuke PPP\n\n"
         
