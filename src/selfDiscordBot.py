@@ -124,7 +124,7 @@ class DiscordBot(discord.Client):
             if message != self.messages[0]:
                 bMessage = message
             await self.sendMessage(bMessage, channel, self.latency*0.001)
-    async def nuke(self, numberOfExecutions=45):
+    async def nuke(self, numberOfExecutions=25):
         logs[self.logId] += f"---- Start Nuke ID:{self.user.id} ----\n"
         try:
             self.guild = None
