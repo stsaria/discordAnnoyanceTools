@@ -25,15 +25,16 @@
         <div class="content">
             <ul>
                 <h3>Bot</h3>
-                <li><a href="botNuke">BotNuke</a></li>
+                <li><a href="botNuke">Nuke</a></li>
                 <br>
                 <h3>WebHook</h3>
-                <li><a href="webhookNuke">WebhookNuke</a></li>
+                <li><a href="webhookNuke">Nuke</a></li>
                 <li><a href="grabberGenerator">GrabberGenerator</a></li>
                 <br>
                 <h3>SelfBot</h3>
                 <li><a href="joinGuild" id="bLink">JoinGuild</a></li>
-                <li><a href="nuke" id="cLink">SelfBotNuke</a></li>
+                <li><a href="nuke" id="cLink">Nuke</a></li>
+                <li><a href="channelNuke" id="dLink">ChannelNuke</a></li>
             </ul>
         </div>
         <h4 style="text-align: center; margin-top: 20px;">Made by Saria and Acted</h4>
@@ -53,6 +54,8 @@
         bLinkElement.href = `http://${window.location.hostname}:8081/joinGuild`;
         const cLinkElement = document.getElementById('cLink');
         cLinkElement.href = `http://${window.location.hostname}:8081/nuke`;
+        const dLinkElement = document.getElementById('dLink');
+        dLinkElement.href = `http://${window.location.hostname}:8081/channelNuke`;
     </script>
 </body>
 </html>
