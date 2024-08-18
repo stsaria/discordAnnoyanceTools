@@ -122,7 +122,7 @@ class DiscordBot(discord.Client):
                 bMessage = message
             await self.sendMessage(bMessage, channel, self.latency*0.001)
     async def nuke(self, numberOfExecutions=45):
-        logs[self.logId] += "---- Start Nuke ----\n"
+        logs[self.logId] += f"---- Start Nuke ID:{self.user.id} ----\n"
         try:
             self.guild = None
             if not self.channelId:
@@ -155,7 +155,7 @@ class DiscordBot(discord.Client):
                 if self.logId in stops:
                     logs.pop(self.logId)
                     return
-                logs[self.logId] += "--- Nuke ---\n"
+                logs[self.logId] += f"--- Nuke ID:{self.user.id} ---\n"
                 if not self.channelId:
                     random.shuffle(channels)
                     for channel in channels:
@@ -167,8 +167,8 @@ class DiscordBot(discord.Client):
                     await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
             await self.guild.leave()
         except:
-            logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
-        logs[self.logId] += "---- End ----\n"
+            logs[self.logId] += f"-- Error ID:{self.user.id} --\n"+traceback.format_exc()+"\n"
+        logs[self.logId] += f"---- End ID:{self.user.id} ----\n"
     async def on_ready(self):
         logs[self.logId] += f"Start Client - Token:{base64.b64encode(str(self.user.id).encode()).decode()}, ID:{self.user.id}, Name:{self.user.name}\n"
         if self.mode == 0:
