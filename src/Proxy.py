@@ -1,4 +1,4 @@
-import requests, traceback, os
+import requests, os
 
 class Proxy:
     def __init__(self, fileName:str) -> None:
@@ -11,7 +11,6 @@ class Proxy:
             }, timeout=timeout)
             return True
         except:
-            print(traceback.format_exc())
             return False
     def setProxy(self, proxy:str):
         if not self.checkProxy(proxy):
