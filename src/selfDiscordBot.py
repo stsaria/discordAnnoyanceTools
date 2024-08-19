@@ -27,9 +27,9 @@ class DiscordApis():
     def joinGuild(self, inviteCode:str):
         res = requests.post(f"{discordApiBaseUrl}/invites/{inviteCode}", headers=self.generateHeaders())
         if str(res.status_code)[0] == "2":
-            logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(str(self.getUserInfo()[1]["id"]).encode()).decode()+"\n"
+            logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"]).encode().decode()+"\n"
         else:
-            logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(str(self.getUserInfo()[1]["id"]).encode()).decode()+"\n"
+            logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"]).encode().decode()+"\n"
         return str(res.status_code)[0] == "2"
 
 class DiscordBot(discord.Client):
@@ -168,7 +168,6 @@ class DiscordBot(discord.Client):
                         random.shuffle(self.channels)
                 else:
                     await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
-            await self.guild.leave()
         except:
             logs[self.logId] += f"-- Error ID:{self.user.id} --\n"+traceback.format_exc()+"\n"
         logs[self.logId] += f"---- End ID:{self.user.id} ----\n"
@@ -176,6 +175,13 @@ class DiscordBot(discord.Client):
         logs[self.logId] += f"Start Client - Token:{base64.b64encode(str(self.user.id).encode()).decode()}, ID:{self.user.id}, Name:{self.user.name}\n"
         if self.mode == 0:
             await self.nuke()
+        elif self.mode == 1:
+            try:
+                guild = self.get_guild(self.guildId)
+                await guild.leave()
+                logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} LeaveGuild Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
+            except Exception as e:
+                logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} LeaveGuild Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
     async def on_message(self, message):
         if message.author.bot:
             return
@@ -227,6 +233,30 @@ def joinGuild():
                 logs[logId] += f"Error: invalid token - {token}\n"
         return render_template('selfBotJoinGuild.html', logId=logId)
     return render_template('selfBotJoinGuild.html')
+
+@app.route('/leaveGuild', methods=["GET", "POST"])
+def leaveGuild():
+    if request.method == "POST":
+        proxy.getProxy()
+        logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
+        logs[logId] = "Start Pman Leaver PPP\n\n"
+        
+        tokens = request.form["tokens"].split("\r\n")
+        guildId = int(request.form["guildId"])
+        
+        for token in tokens:
+            apis = DiscordApis(logId, token)
+            userInfo = apis.getUserInfo()
+            if userInfo[0]:
+                logs[logId] += "OK Token: "+base64.b64encode(str(userInfo[1]["id"]).encode()).decode()+"\n"
+                bot = DiscordBot(logId, token, guildId, None, None, None, None, 1)
+                logIdBotClass[logId] = bot
+                botThread = threading.Thread(target=bot.runBot, daemon=True)
+                botThread.start()
+            else:
+                logs[logId] += f"Error: invalid token - {token}\n"
+        return render_template('selfBotLeaveGuild.html', logId=logId)
+    return render_template('selfBotLeaveGuild.html')
 
 @app.route('/channelNuke', methods=["GET", "POST"])
 def channelNuke():

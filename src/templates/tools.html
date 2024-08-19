@@ -35,6 +35,7 @@
                 <li><a href="joinGuild" id="bLink">JoinGuild</a></li>
                 <li><a href="nuke" id="cLink">Nuke</a></li>
                 <li><a href="channelNuke" id="dLink">ChannelNuke</a></li>
+                <li><a href="leaveGuild" id="eLink">LeaveGuild</a></li>
                 <br>
                 <h3>Etc</h3>
                 <li><a href="settingProxy">SettingProxy</a></li>
@@ -52,13 +53,16 @@
             count = (count + 1) % 201; // 200を超えたらリセット
             notificationCount.textContent = count;
         }, 50);
-
+        
         const bLinkElement = document.getElementById('bLink');
-        bLinkElement.href = `http://${window.location.hostname}:8081/joinGuild`;
         const cLinkElement = document.getElementById('cLink');
-        cLinkElement.href = `http://${window.location.hostname}:8081/nuke`;
         const dLinkElement = document.getElementById('dLink');
+        const eLinkElement = document.getElementById('eLink');
+
+        bLinkElement.href = `http://${window.location.hostname}:8081/joinGuild`;
+        cLinkElement.href = `http://${window.location.hostname}:8081/nuke`;
         dLinkElement.href = `http://${window.location.hostname}:8081/channelNuke`;
+        eLinkElement.href = `http://${window.location.hostname}:8081/leaveGuild`;
     </script>
 </body>
 </html>
