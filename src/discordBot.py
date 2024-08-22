@@ -35,7 +35,7 @@ class DiscordBot(commands.Bot):
             logs[self.logId] += "[-]Failed"
         logs[self.logId] += f" | {str(datetime.datetime.now())} DeleteChannel ID:{channel.id} Name:{channel.name}\n"
     async def sendMessage(self, message:str, channel:discord.abc.GuildChannel, latencyMs:float):
-        if channel in self.guild.categories:
+        if not type(channel) in [discord.TextChannel, discord.VoiceChannel, discord.Thread]:
             self.channels.remove(channel)
             return
         try:

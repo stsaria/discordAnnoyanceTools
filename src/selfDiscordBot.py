@@ -49,6 +49,7 @@ class DiscordBot(discord.Client):
         
         self.nukeLatency = latency
         self.messages = messages
+        self.exclusionChannelIds = []
         if mode == 0:
             self.allUserBan, self.allChannelDelete, self.randomMention, self.exclusionChannelIds, self.channelId = option
         self.mode = mode
@@ -69,14 +70,16 @@ class DiscordBot(discord.Client):
             logs[self.logId] += "[-]Failed"
         logs[self.logId] += f" - {str(datetime.datetime.now())} DeleteChannel ID:{channel.id} Name:{channel.name}\n"
     async def sendMessage(self, message:str, channel:discord.abc.GuildChannel, latencyMs:float):
-        if channel in self.guild.categories:
-            try:
-                self.exclusionChannelIds += str(channel.id)
-            except:
-                pass
-            return
         try:
-            await channel.send(message)
+            if not (type(channel) in [discord.TextChannel, discord.VoiceChannel, discord.Thread] and channel.slowmode_delay == 0 and channel.permissions_for(self.guild.get_member(self.user.id)).send_messages):
+                self.exclusionChannelIds.append(str(channel.id))
+                return
+            if message[0] == "/":
+                async for command in channel.slash_commands():
+                    if command.name == message.split(" ")[0][1:]:
+                        await command(channel)
+            else:
+                await channel.send(message)
             logs[self.logId] += "[+]Success"
         except Exception as e:
             logs[self.logId] += f"[-]Failed {e}"
@@ -117,8 +120,8 @@ class DiscordBot(discord.Client):
                 bMessage += "\n"
                 try:
                     bMembers = members
-                    if len(members) >= 12:
-                        bMembers = random.sample(members, 12)
+                    if len(members) >= 35:
+                        bMembers = random.sample(members, 35)
                     for member in bMembers:
                         bMessage += f"<@{member.id}> "
                 except:
