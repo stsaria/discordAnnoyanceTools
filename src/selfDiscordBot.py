@@ -9,27 +9,32 @@ logs = {}
 logIdBotClass = {}
 stops = []
 failedChannels = []
-discordApiBaseUrl = "https://discord.com/api/v9"
+DISCORD_API_BASE_URL= "https://discord.com/api/v9"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
 
 class DiscordApis():
     def __init__(self, logId:str, token:str):
         self.logId = logId
         self.token = token
+    def generateXSuperProperties(self):
+        xSuperPropertiesStr = '{"os":"Windows","browser":"Chrome","device":"","system_locale":"ja"\,"browser_user_agent":"'+USER_AGENT+'","browser_version":"127.0.0.0","os_version":"10","referrer":"","referring_domain":"","referrer_current":"","referring_domain_current":"","release_channel":"stable","client_build_number":320705,"client_event_source":null}'
+        return base64.b64encode(xSuperPropertiesStr.encode()).decode()
     def generateHeaders(self):
         headers = {
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
-            "Authorization": self.token
+            "user-agent": USER_AGENT,
+            "Authorization": self.token,
+            "x-super-properties": self.generateXSuperProperties()
         }
         return headers
     def getUserInfo(self):
-        res = requests.get(f"{discordApiBaseUrl}/users/@me", headers=self.generateHeaders())
+        res = requests.get(f"{DISCORD_API_BASE_URL}/users/@me", headers=self.generateHeaders())
         return str(res.status_code)[0] == "2", json.loads(res.text)
     def joinGuild(self, inviteCode:str):
-        res = requests.post(f"{discordApiBaseUrl}/invites/{inviteCode}", headers=self.generateHeaders())
+        res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=self.generateHeaders())
         if str(res.status_code)[0] == "2":
-            logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"]).encode().decode()+"\n"
+            logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
         else:
-            logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"]).encode().decode()+"\n"
+            logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+f" StatusCode: {res.status_code}\n"
         return str(res.status_code)[0] == "2"
 
 class DiscordBot(discord.Client):
