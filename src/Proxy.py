@@ -3,7 +3,7 @@ import requests, os
 class Proxy:
     def __init__(self, fileName:str) -> None:
         self.fileName = fileName
-    def checkProxy(self, proxy:str, testUrl="http://google.com", timeout=10):
+    def checkProxy(self, proxy:str, testUrl="https://google.com", timeout=10):
         try:
             requests.get(testUrl, proxies={
                 "http": proxy,
