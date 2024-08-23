@@ -176,7 +176,7 @@ class DiscordBot(discord.Client):
                             try:
                                 self.commands = channel.slash_commands()
                                 self.exclusionChannelIds.append(str(channel.id))
-                                channel = await channel.create_thread(name="荒らし共栄圏最強")
+                                channel = await channel.create_thread(name=self.channelName)
                                 thereds.append(channel)
                             except:
                                 pass
