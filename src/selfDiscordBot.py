@@ -75,9 +75,12 @@ class DiscordBot(discord.Client):
                 self.exclusionChannelIds.append(str(channel.id))
                 return
             if message[0] == "/":
-                async for command in self.commands:
+                aa = await channel.application_commands
+                print(aa)
+                async for command in channel.slash_commands():
+                    print(command)
                     if command.name == message.split(" ")[0][1:]:
-                        await command(channel)
+                        await command.__call__(channel)
             else:
                 await channel.send(message)
             logs[self.logId] += "[+]Success"
@@ -156,7 +159,6 @@ class DiscordBot(discord.Client):
                 await self.deleteAllChannel(self.guild)
                 await asyncio.gather(*(self.createChannel(self.channelName, self.guild) for _ in range(60)))
             self.channels = list(self.guild.channels)
-            self.commands = channel.slash_commands()
             thereds = []
             roles = list(self.guild.roles)
             members = self.guild.members
@@ -174,7 +176,6 @@ class DiscordBot(discord.Client):
                             continue
                         if type(channel) == discord.ForumChannel and not channel in thereds:
                             try:
-                                self.commands = channel.slash_commands()
                                 self.exclusionChannelIds.append(str(channel.id))
                                 channel = await channel.create_thread(name=self.channelName)
                                 thereds.append(channel)
