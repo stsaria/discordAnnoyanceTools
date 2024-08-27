@@ -98,7 +98,6 @@ def botNuke():
         allChannelDelete = "allChannelDelete" in request.form
         
         discordBot.logs[logId] += f"""-- Value you entered --
-Token:{token}
 ServerID:{guildId}
 ChannelName:{channelName}
 Latency:{latency}ms, {latency*0.001}s

@@ -290,7 +290,6 @@ def channelNuke():
         randomMention = "randomMention" in request.form
         
         logs[logId] += f"""-- Value you entered --
-Tokens:{tokens}
 ChannelID:{channelId}
 Latency:{latency}ms, {latency*0.001}s
 message:\n{message}\n
@@ -327,7 +326,6 @@ def nuke():
         randomMention = "randomMention" in request.form
         
         logs[logId] += f"""-- Value you entered --
-Tokens:{tokens}
 ServerID:{guildId}
 ChannelName:{channelName}
 Latency:{latency}ms, {latency*0.001}s
