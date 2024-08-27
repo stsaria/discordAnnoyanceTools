@@ -1,5 +1,6 @@
 # Discordの荒らし等のツール
-https://www.youtube.com/watch?v=UXxfa5v2iro
+紹介動画: https://www.youtube.com/watch?v=UXxfa5v2iro
+
 ※このプログラムは、私が勉強用として作ったものですので、これで荒らしして特定とかされても責任を負うことはないですよ〜
 ちなみにLinuxはあんまりちゃんと動かないです
 ## ツールリスト
