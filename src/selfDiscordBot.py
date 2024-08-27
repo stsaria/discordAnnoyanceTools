@@ -229,6 +229,26 @@ def stop():
     stops.append(logId)
     return redirect(request.referrer)
 
+@app.route('/tokenChecker', methods=["GET", "POST"])
+def tokenChecker():
+    if request.method == "POST":
+        proxy.getProxy()
+        logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
+        logs[logId] = "Start Pman TokenChecker PPP\n\n"
+        
+        tokens = request.form["tokens"].split("\r\n")
+        
+        for token in tokens:
+            apis = DiscordApis(logId, token)
+            userInfo = apis.getUserInfo()
+            if userInfo[0]:
+                userInfo = userInfo[1]
+                logs[logId] += f"""====== Token: {token} ======\nID - {userInfo["id"]}\nUserName - {userInfo["username"]}\nGlobalName - {userInfo["global_name"]}\nEmail - {userInfo["email"]}\nPhoneNumber - {userInfo["phone"]}\n\n"""
+            else:
+                logs[logId] += f"Error: invalid token - {token}\n\n"
+        return render_template('selfBotTokenChecker.html', logId=logId)
+    return render_template('selfBotTokenChecker.html')
+
 @app.route('/joinGuild', methods=["GET", "POST"])
 def joinGuild():
     if request.method == "POST":
@@ -243,7 +263,7 @@ def joinGuild():
             apis = DiscordApis(logId, token)
             userInfo = apis.getUserInfo()
             if userInfo[0]:
-                logs[logId] += "OK Token: "+base64.b64encode(str(userInfo[1]["id"]).encode()).decode()+"\n"
+                logs[logId] += f"""OK Token: {base64.b64encode(str(userInfo[1]["id"]).encode()).decode()}\n"""
                 t = threading.Thread(target=apis.joinGuild, args=(guildInviteCode,), daemon=True)
                 t.start()
             else:
@@ -265,7 +285,7 @@ def leaveGuild():
             apis = DiscordApis(logId, token)
             userInfo = apis.getUserInfo()
             if userInfo[0]:
-                logs[logId] += "OK Token: "+base64.b64encode(str(userInfo[1]["id"]).encode()).decode()+"\n"
+                logs[logId] += f"""OK Token: {base64.b64encode(str(userInfo[1]["id"]).encode()).decode()}\n"""
                 bot = DiscordBot(logId, token, guildId, None, None, None, None, 1)
                 logIdBotClass[logId] = bot
                 botThread = threading.Thread(target=bot.runBot, daemon=True)

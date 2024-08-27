@@ -36,6 +36,7 @@
                 <li><a href="nuke" id="cLink">Nuke</a></li>
                 <li><a href="channelNuke" id="dLink">ChannelNuke</a></li>
                 <li><a href="leaveGuild" id="eLink">LeaveGuild</a></li>
+                <li><a href="leaveGuild" id="fLink">TokenChecker</a></li>
                 <br>
                 <h3>Etc</h3>
                 <li><a href="settingProxy">SettingProxy</a></li>
@@ -58,11 +59,13 @@
         const cLinkElement = document.getElementById('cLink');
         const dLinkElement = document.getElementById('dLink');
         const eLinkElement = document.getElementById('eLink');
+        const fLinkElement = document.getElementById('fLink');
 
         bLinkElement.href = `http://${window.location.hostname}:8081/joinGuild`;
         cLinkElement.href = `http://${window.location.hostname}:8081/nuke`;
         dLinkElement.href = `http://${window.location.hostname}:8081/channelNuke`;
         eLinkElement.href = `http://${window.location.hostname}:8081/leaveGuild`;
+        fLinkElement.href = `http://${window.location.hostname}:8081/tokenChecker`;
     </script>
 </body>
 </html>

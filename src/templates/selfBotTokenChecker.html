@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discord Annoyance Tools - JoinGuild</title>
+    <title>Discord Annoyance Tools - TokenChecker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
@@ -18,13 +18,12 @@
                 <img src="static/discordLogo.svg" class="notification-icon">
                 <span class="notification-count" id="notificationCount">0</span>
             </div>
-            <h1 class="title">JoinGuild</h1>
+            <h1 class="title">TokenChecker</h1>
             <ul class="nav">
                 <li><a href="http://localhost:8080/tools" id="aLink">Tools</a></li>
             </ul>
         </header>
         <div class="content">
-            <p>※hcapcha(ロボットでないことの確認)の確認が必要になるアカウントは参加できません</p>
             <div class="row">
                 <div class="col-md-6">
                     <form method="post" class="mb-3" id="form" accept-charset="UTF-8">
@@ -32,13 +31,9 @@
                             <label for="tokens">Tokens</label>
                             <textarea class="form-control" id="tokens" name="tokens" oninput="saveContent()" rows="6" placeholder="OTAxxxxxxxxxxxxxxxxxxxxxxxxx" required></textarea>
                         </div>
-                        <div class="mb-2">
-                            <label for="guildInviteCode">サーバー招待コード</label>
-                            <p>https://discord.gg/<input type="text" id="guildInviteCode" name="guildInviteCode" placeholder="xxxxxx" required></p>
-                        </div>
                         <button type="submit" id="submit" class="btn btn-primary">
                             <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                            参加
+                            確認
                         </button>
                     </form>
                 </div>
@@ -58,9 +53,8 @@
 
         document.getElementById('form').addEventListener('submit', function(event) {
             var tokensInput = document.getElementById("tokens");
-            var guildInviteCode = document.getElementById("guildInviteCode");
             var submitButton = document.getElementById("submit");
-            tokenInput.readOnly = guildInviteCode.readOnly = true;
+            tokenInput.readOnly = true;
             submitButton.disabled = true;
             var spinner = this.querySelector('.spinner-border');
             spinner.classList.remove('d-none');
