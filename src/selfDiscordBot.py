@@ -320,7 +320,7 @@ RandomMention:{randomMention}
 """
         
         for token in tokens:
-            bot = DiscordBot(logId, token, None, None, latency, ([message]*(len(subMessages)+2))+subMessages, [False, False, randomMention, None, channelId], 0)
+            bot = DiscordBot(logId, token, None, None, latency, ([message]*(len(subMessages)+2))+subMessages, [False, False, randomMention, [], channelId], 0)
             logIdBotClass[logId] = bot
             botThread = threading.Thread(target=bot.runBot, daemon=True)
             botThread.start()
