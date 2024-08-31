@@ -24,13 +24,17 @@
             </ul>
         </header>
         <div class="content">
-            <p>※hcapcha(ロボットでないことの確認)の確認が必要になるアカウントは参加できません</p>
+            <p>※hcapchaの確認が必要になるアカウントはCapmonsterのApiKeyがないと参加させれません</p>
             <div class="row">
                 <div class="col-md-6">
                     <form method="post" class="mb-3" id="form" accept-charset="UTF-8">
                         <div class="mb-2">
                             <label for="tokens">Tokens</label>
                             <textarea class="form-control" id="tokens" name="tokens" oninput="saveContent()" rows="6" placeholder="OTAxxxxxxxxxxxxxxxxxxxxxxxxx" required></textarea>
+                        </div>
+                        <div class="mb-2">
+                            <label for="capmonsterApiKey">Capmonster ApiKey</label>
+                            <input type="text" class="form-control" id="capmonsterApiKey" name="capmonsterApiKey" required>
                         </div>
                         <div class="mb-2">
                             <label for="guildInviteCode">サーバー招待コード</label>
@@ -58,9 +62,10 @@
 
         document.getElementById('form').addEventListener('submit', function(event) {
             var tokensInput = document.getElementById("tokens");
-            var guildInviteCode = document.getElementById("guildInviteCode");
+            var guildInviteCodeInput = document.getElementById("guildInviteCode");
+            var capmonsterApiKeyInput = document.getElementById("capmonsterApiKey");
             var submitButton = document.getElementById("submit");
-            tokenInput.readOnly = guildInviteCode.readOnly = true;
+            tokenInput.readOnly = guildInviteCodeInput.readOnly = capmonsterApiKeyInput.readOnly = true;
             submitButton.disabled = true;
             var spinner = this.querySelector('.spinner-border');
             spinner.classList.remove('d-none');

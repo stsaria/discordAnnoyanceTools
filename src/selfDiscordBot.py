@@ -1,6 +1,7 @@
 import traceback, threading, requests, datetime, asyncio, discord, random, string, base64, json
 import Proxy
 from flask import Flask, request, redirect, render_template
+from capmonster_python import HCaptchaTask
 
 proxy = Proxy.Proxy("proxy.txt")
 app = Flask(__name__)
@@ -21,18 +22,33 @@ class DiscordApis():
         return base64.b64encode(xSuperPropertiesStr.encode()).decode()
     def generateHeaders(self):
         headers = {
-            "user-agent": USER_AGENT,
-            "Authorization": self.token,
-            "x-super-properties": self.generateXSuperProperties()
+            "user-agent":USER_AGENT,
+            "Authorization":self.token,
+            "x-super-properties":self.generateXSuperProperties()
         }
         return headers
     def getUserInfo(self):
         res = requests.get(f"{DISCORD_API_BASE_URL}/users/@me", headers=self.generateHeaders())
         return str(res.status_code)[0] == "2", json.loads(res.text)
-    def joinGuild(self, inviteCode:str):
+    def hcaptchaSolver(self, apikey:str, sitekey:str, data:str, siteUrl="https://discord.com"):
+        try:
+            capmonster = HCaptchaTask(apikey)
+            taskId = capmonster.create_task(siteUrl, sitekey)
+            result = capmonster.join_task_result(taskId)
+            return result.get("gRecaptchaResponse")
+        except:
+            return None
+    def joinGuild(self, inviteCode:str, capmonsterApiKey=""):
         res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=self.generateHeaders())
         if str(res.status_code)[0] == "2":
             logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
+        elif res.status_code == 400 and "captcha_key" in res.json() and not capmonsterApiKey.replace(" ", "") == "":
+            logs[self.logId] += f"[?]Captcha - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
+            appendHeaders = {
+                "X-Captcha-Key":self.hcaptchaSolver(capmonsterApiKey, str(res.json()["captcha_sitekey"]), res.json()["captcha_rqdata"]),
+                "X-Captcha-Rqtoken":res.json()["captcha_rqtoken"]
+            }
+            res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=self.generateHeaders()+appendHeaders)
         else:
             logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+f" StatusCode: {res.status_code}\n"
         return str(res.status_code)[0] == "2"
@@ -258,13 +274,14 @@ def joinGuild():
         
         tokens = request.form["tokens"].split("\r\n")
         guildInviteCode = request.form["guildInviteCode"]
+        capmonsterApiKey = request.form["capmonsterApiKey"]
         
         for token in tokens:
             apis = DiscordApis(logId, token)
             userInfo = apis.getUserInfo()
             if userInfo[0]:
                 logs[logId] += f"""OK Token: {base64.b64encode(str(userInfo[1]["id"]).encode()).decode()}\n"""
-                t = threading.Thread(target=apis.joinGuild, args=(guildInviteCode,), daemon=True)
+                t = threading.Thread(target=apis.joinGuild, args=(guildInviteCode,capmonsterApiKey), daemon=True)
                 t.start()
             else:
                 logs[logId] += f"Error: invalid token - {token}\n"
