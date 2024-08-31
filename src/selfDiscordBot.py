@@ -36,17 +36,19 @@ class DiscordApis():
             taskId = capmonster.create_task(siteUrl, sitekey)
             result = capmonster.join_task_result(taskId)
             return result.get("gRecaptchaResponse")
-        except:
+        except Exception as e:
+            logs[self.logId] += f"[-]Captcha Failed - {str(datetime.datetime.now())} {str(e)} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
             return None
     def joinGuild(self, inviteCode:str, capmonsterApiKey=""):
         res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=self.generateHeaders())
         if str(res.status_code)[0] == "2":
             logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
+            return True
         elif res.status_code == 400 and "captcha_key" in res.json() and not capmonsterApiKey.replace(" ", "") == "":
             logs[self.logId] += f"[?]Captcha - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
             solverResult = self.hcaptchaSolver(capmonsterApiKey, str(res.json()["captcha_sitekey"]), res.json()["captcha_rqdata"])
             if not solverResult:
-                logs[self.logId] += f"[-]Captcha Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+f" StatusCode: {res.status_code}\n"
+                return False
             appendHeaders = {
                 "X-Captcha-Key":solverResult,
                 "X-Captcha-Rqtoken":res.json()["captcha_rqtoken"]
@@ -54,11 +56,11 @@ class DiscordApis():
             res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=self.generateHeaders()+appendHeaders)
             if str(res.status_code)[0] == "2":
                 logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
+                return True
             else:
                 logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+f" StatusCode: {res.status_code}\n"
         else:
             logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+f" StatusCode: {res.status_code}\n"
-        return str(res.status_code)[0] == "2"
 
 class DiscordBot(discord.Client):
     def __init__(self, logId:str, token:str, id:int, name:str, latency:int, messages:list[str], option:list, mode:int):
@@ -98,8 +100,6 @@ class DiscordBot(discord.Client):
                 self.exclusionChannelIds.append(str(channel.id))
                 return
             if message[0] == "/":
-                aa = await channel.application_commands
-                print(aa)
                 async for command in channel.slash_commands():
                     print(command)
                     if command.name == message.split(" ")[0][1:]:
