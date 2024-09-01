@@ -11,7 +11,8 @@ logIdBotClass = {}
 stops = []
 failedChannels = []
 DISCORD_API_BASE_URL= "https://discord.com/api/v9"
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9023 Chrome/108.0.5359.215 Electron/22.3.26 Safari/537.36"
+B_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
 
 class DiscordApis():
     def __init__(self, logId:str, token:str):
@@ -57,8 +58,7 @@ class DiscordApis():
     def hcaptchaSolver(self, apikey:str, sitekey:str, data:str, siteUrl="https://discord.com"):
         try:
             capmonster = HCaptchaTask(apikey)
-            capmonster.set_user_agent(USER_AGENT)
-            print(data)
+            capmonster.set_user_agent(B_USER_AGENT)
             taskId = capmonster.create_task(siteUrl, sitekey, is_invisible=True, custom_data=data, )
             result = capmonster.join_task_result(taskId)
             return result.get("gRecaptchaResponse")
@@ -84,8 +84,6 @@ class DiscordApis():
                 "captcha_rqtoken":res.json()["captcha_rqtoken"]
             }
             res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=headers, json=payload)
-            print(headers, "\n", payload)
-            print(res)
             if str(res.status_code)[0] == "2":
                 logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
                 return True
