@@ -174,7 +174,7 @@ class DiscordBot(discord.Client):
         logs[self.logId] += f" - {str(datetime.datetime.now())} DeleteChannel ID:{channel.id} Name:{channel.name}\n"
     async def sendMessage(self, message:str, channel:discord.abc.GuildChannel, latencyMs:float):
         try:
-            if not (type(channel) in [discord.TextChannel, discord.VoiceChannel, discord.Thread] and channel.slowmode_delay == 0 and channel.permissions_for(self.guild.get_member(self.user.id)).send_messages) and not self.channelId:
+            if not (type(channel) in [discord.TextChannel, discord.VoiceChannel, discord.Thread] and channel.slowmode_delay == 0 and channel.permissions_for(self.guild.get_member(self.user.id)).send_messages) and self.channelName:
                 self.exclusionChannelIds.append(str(channel.id))
                 return
             if message[0] == "/":
@@ -238,7 +238,7 @@ class DiscordBot(discord.Client):
         logs[self.logId] += f"---- Start Nuke ID:{self.user.id} ----\n"
         try:
             self.guild = None
-            if not self.channelId:
+            if self.channelName:
                 self.guild = self.get_guild(self.guildId)
                 if not self.guild:
                     logs[self.logId] += f"Error: The server you entered has not been joined by a bot - ID:{self.user.id}\n"
@@ -265,7 +265,7 @@ class DiscordBot(discord.Client):
                     logs.pop(self.logId)
                     return
                 logs[self.logId] += f"--- Nuke ID:{self.user.id} ---\n"
-                if not self.channelId:
+                if self.channelName:
                     random.shuffle(self.channels)
                     for channel in self.channels:
                         if str(channel.id) in self.exclusionChannelIds:
