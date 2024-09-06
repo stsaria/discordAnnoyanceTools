@@ -33,10 +33,13 @@
                 <br>
                 <h3>SelfBot</h3>
                 <li><a href="joinGuild" id="bLink">JoinGuild</a></li>
+                <li><a href="reaction" id="gLink">Reaction</a></li>
+                <li><a href="pushButton" id="hLink">PushButton</a></li>
+                <li><a href="typing" id="iLink">Typing</a></li>
                 <li><a href="nuke" id="cLink">Nuke</a></li>
                 <li><a href="channelNuke" id="dLink">ChannelNuke</a></li>
                 <li><a href="leaveGuild" id="eLink">LeaveGuild</a></li>
-                <li><a href="leaveGuild" id="fLink">TokenChecker</a></li>
+                <li><a href="tokenChecker" id="fLink">TokenChecker</a></li>
                 <br>
                 <h3>Etc</h3>
                 <li><a href="settingProxy">SettingProxy</a></li>
@@ -60,12 +63,18 @@
         const dLinkElement = document.getElementById('dLink');
         const eLinkElement = document.getElementById('eLink');
         const fLinkElement = document.getElementById('fLink');
+        const gLinkElement = document.getElementById('gLink');
+        const hLinkElement = document.getElementById('hLink');
+        const iLinkElement = document.getElementById('iLink');
 
         bLinkElement.href = `http://${window.location.hostname}:8081/joinGuild`;
         cLinkElement.href = `http://${window.location.hostname}:8081/nuke`;
         dLinkElement.href = `http://${window.location.hostname}:8081/channelNuke`;
         eLinkElement.href = `http://${window.location.hostname}:8081/leaveGuild`;
         fLinkElement.href = `http://${window.location.hostname}:8081/tokenChecker`;
+        gLinkElement.href = `http://${window.location.hostname}:8081/reaction`;
+        hLinkElement.href = `http://${window.location.hostname}:8081/pushButton`;
+        iLinkElement.href = `http://${window.location.hostname}:8081/typing`;
     </script>
 </body>
 </html>

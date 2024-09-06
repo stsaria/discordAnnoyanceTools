@@ -107,17 +107,20 @@ class DiscordBot(discord.Client):
         self.logId = logId
         self.token = token
         
-        # DmNukeもServerNukeも呼び出されるから、idとかnameっていう抽象的な名前にしている
-        self.guildId = self.userId = id
+        self.guildId = self.userId = self.channelId = id
         self.channelName = self.groupName = name
         
         self.nukeLatency = latency
         self.messages = messages
         self.exclusionChannelIds = []
         if mode == 0:
-            self.allUserBan, self.allChannelDelete, self.randomMention, self.exclusionChannelIds, self.channelId = option
+            self.allUserBan, self.allChannelDelete, self.randomMention, self.exclusionChannelIds = option
         elif mode == 2:
             self.inviteCode, self.capmonsterKey = option
+        elif mode == 3:
+            self.emoji, self.messageId = option
+        elif mode == 4:
+            self.messageId = option[0]
         self.mode = mode
     async def banUser(self, user:discord.Member):
         try:
@@ -261,11 +264,45 @@ class DiscordBot(discord.Client):
                 guild = self.get_guild(self.guildId)
                 await guild.leave()
                 logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} LeaveGuild Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
-            except Exception as e:
+            except:
                 logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} LeaveGuild Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
         elif self.mode == 2:
             apis = DiscordApis(self.logId, self.token)
             apis.joinGuild(self.inviteCode, self.capmonsterKey)
+        elif self.mode == 3:
+            try:
+                channel = self.get_channel(self.channelId)
+                message = await channel.fetch_message(self.messageId)
+                if self.emoji[1].replace(" ", "") == "":
+                    await message.add_reaction(self.emoji[0])
+                else:
+                    await message.add_reaction(self.emoji[1])
+                logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} Reaction Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
+            except:
+                logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} Reaction Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
+        elif self.mode == 4:
+            try:
+                channel = self.get_channel(self.channelId)
+                message = await channel.fetch_message(self.messageId)
+                for component in message.components:
+                    if type(component) == discord.Button:
+                        await component.click()
+                    elif type(component) == discord.ActionRow:
+                        for child in component.children:
+                            if type(child) == discord.Button:
+                                await child.click()
+                logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} PushButton Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
+            except:
+                logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} PushButton Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
+        elif self.mode == 5:
+            try:
+                channel = self.get_channel(self.channelId)
+                async with channel.typing():
+                    while not self.logId in stops:
+                        logs[self.logId] += f"[+]Typing now - {str(datetime.datetime.now())} Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
+                        await asyncio.sleep(20)
+            except:
+                logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} Typing Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
     async def on_message(self, message):
         if message.author.bot:
             return
@@ -364,12 +401,70 @@ def leaveGuild():
         return render_template("selfBotLeaveGuild.html", logId=logId)
     return render_template("selfBotLeaveGuild.html")
 
+@app.route("/reaction", methods=["GET", "POST"])
+def reaction():
+    if request.method == "POST":
+        proxy.getProxy()
+        logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
+        logs[logId] = "Start Pman Reaction PwP\n\n"
+        
+        tokens = request.form["tokens"].split("\r\n")
+        channelId = int(request.form["channelId"])
+        messageId = int(request.form["messageId"])
+        emoji = [request.form['emoji'], request.form['customEmoji']]
+        
+        for token in tokens:
+            bot = DiscordBot(logId, token, channelId, None, None, None, [emoji, messageId], 3)
+            logIdBotClass[logId] = bot
+            botThread = threading.Thread(target=bot.runBot, daemon=True)
+            botThread.start()
+        return render_template("selfBotReaction.html", logId=logId)
+    return render_template("selfBotReaction.html")
+
+@app.route("/pushButton", methods=["GET", "POST"])
+def pushButton():
+    if request.method == "POST":
+        proxy.getProxy()
+        logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
+        logs[logId] = "Start Pman PushButton PeP\n\n"
+        
+        tokens = request.form["tokens"].split("\r\n")
+        channelId = int(request.form["channelId"])
+        messageId = int(request.form["messageId"])
+        
+        for token in tokens:
+            bot = DiscordBot(logId, token, channelId, None, None, None, [messageId], 4)
+            logIdBotClass[logId] = bot
+            botThread = threading.Thread(target=bot.runBot, daemon=True)
+            botThread.start()
+        return render_template("selfBotPushButton.html", logId=logId)
+    return render_template("selfBotPushButton.html")
+
+@app.route("/typing", methods=["GET", "POST"])
+def typing():
+    if request.method == "POST":
+        proxy.getProxy()
+        logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
+        logs[logId] = "Start Pman Typer PzP\n\n"
+        
+        tokens = request.form["tokens"].split("\r\n")
+        channelId = int(request.form["channelId"])
+        
+        for token in tokens:
+            bot = DiscordBot(logId, token, channelId, None, None, None, None, 5)
+            logIdBotClass[logId] = bot
+            botThread = threading.Thread(target=bot.runBot, daemon=True)
+            botThread.start()
+        return render_template("selfBotTyping.html", logId=logId)
+    return render_template("selfBotTyping.html")
+
+
 @app.route("/channelNuke", methods=["GET", "POST"])
 def channelNuke():
     if request.method == "POST":
         proxy.getProxy()
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
-        logs[logId] = "Start Pman Nuke PPP\n\n"
+        logs[logId] = "Start Pman ChannelNuke PQP\n\n"
         
         tokens = request.form["tokens"].split("\r\n")
         channelId = int(request.form["channelId"])
@@ -389,7 +484,7 @@ RandomMention:{randomMention}
 """
         
         for token in tokens:
-            bot = DiscordBot(logId, token, None, None, latency, ([message]*(len(subMessages)+2))+subMessages, [False, False, randomMention, [], channelId], 0)
+            bot = DiscordBot(logId, token, channelId, None, latency, [message]+subMessages, [False, False, randomMention, []], 0)
             logIdBotClass[logId] = bot
             botThread = threading.Thread(target=bot.runBot, daemon=True)
             botThread.start()
@@ -429,7 +524,7 @@ RandomMention:{randomMention}
 """
         
         for token in tokens:
-            bot = DiscordBot(logId, token, guildId, channelName, latency, ([message]*(len(subMessages)+2))+subMessages, [allUserBan, allChannelDelete, randomMention, exclusionChannelIds, None], 0)
+            bot = DiscordBot(logId, token, guildId, channelName, latency, [message]+subMessages, [allUserBan, allChannelDelete, randomMention, exclusionChannelIds], 0)
             logIdBotClass[logId] = bot
             botThread = threading.Thread(target=bot.runBot, daemon=True)
             botThread.start()

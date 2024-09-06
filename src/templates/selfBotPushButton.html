@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discord Annoyance Tools - SelfBotChannelNuke</title>
+    <title>Discord Annoyance Tools - PuthButton</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
@@ -18,60 +18,36 @@
                 <img src="static/discordLogo.svg" class="notification-icon">
                 <span class="notification-count" id="notificationCount">0</span>
             </div>
-            <h1 class="title">ChannelNuke</h1>
+            <h1 class="title">PuthButton</h1>
             <ul class="nav">
                 <li><a href="http://localhost:8080/tools" id="aLink">Tools</a></li>
             </ul>
         </header>
         <div class="content">
-            <p>招待リンクを張るときはdiscordapp.com/invite/xxxxxxがautomodとかでは検知できないから便利<br>
-            Banやチャンネル削除は権限がないとできないので、権限がない場合は403になります。</p>
             <div class="row">
                 <div class="col-md-6">
                     <form method="post" class="mb-3" id="form" accept-charset="UTF-8">
                         <div class="mb-2">
-                            <label for="tokens">Tokens</label>
+                            <label for="tokens">Tokens:</label>
                             <textarea class="form-control" id="tokens" name="tokens" oninput="saveContent()" rows="6" placeholder="OTAxxxxxxxxxxxxxxxxxxxxxxxxx" required></textarea>
                         </div>
                         <div class="mb-2">
-                            <label for="channelId">チャンネルID</label>
+                            <label for="channelId">チャンネルID:</label>
                             <input type="text" class="form-control" id="channelId" name="channelId" required>
                         </div>
                         <div class="mb-2">
-                            <label for="latency">レイテンシ（1Nukeと1Nukeの間の遅延ms）</label>
-                            <input type="number" class="form-control" id="latency" name="latency" value="300" required>
+                            <label for="messageId">メッセージID:</label>
+                            <input type="text" class="form-control" id="messageId" name="messageId" required>
                         </div>
-                        <div class="mb-2">
-                            <label for="message">メッセージ</label>
-                            <textarea class="form-control" id="message" name="message" rows="15" required># 荒らし共栄圈最強
-[荒らし.com](<https://荒らし.com>)
-
-https://discord.gg/./wa5mn6Z68R
-
-(画像) https://imgur.com/Vr4mtcL
-(画像) https://imgur.com/yNx4Me2
-|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||</textarea>
-                        </div>
-                        <div class="mb-2">
-                            <label for="message">メッセージ2(コマンド荒らしなど（スラッシュコマンドは引数を使用できません）　改行で分けることができます !userId!はサーバーのユーザーIDに変わります)</label>
-                            <textarea class="form-control" id="subMessages" name="subMessages" rows="7"></textarea>
-                        </div>
-                        <div class="mb-2">
-                            <input type="checkbox" name="randomMention" checked>ランダムメンション<br>
-                        </div>
-                        {% if not logId %}
                         <button type="submit" id="submit" class="btn btn-primary">
                             <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                            Nuke!
+                            クリック
                         </button>
-                        {% endif %}
                     </form>
                 </div>
             </div>
-            <p>== ログ ==</p>
             {% if logId %}
             <script src="https://unpkg.com/htmx.org@2.0.1"></script>
-            <button class="btn btn-primary" onclick="location.href='stop?id={{ logId }}'">Stop</button>
             <pre style="white-space: pre-wrap;">
                 <div hx-get="getLog?id={{ logId }}" hx-trigger="every 300ms"></div>
             </pre>
@@ -86,11 +62,9 @@ https://discord.gg/./wa5mn6Z68R
         document.getElementById('form').addEventListener('submit', function(event) {
             var tokensInput = document.getElementById("tokens");
             var channelIdInput = document.getElementById("channelId");
-            var latencyInput = document.getElementById("latency");
-            var messageInput = document.getElementById("message");
-            var subMessagesInput = document.getElementById("subMessages");
+            var messageIdInput = document.getElementById("messageId");
             var submitButton = document.getElementById("submit");
-            tokenInput.readOnly = channelIdInput.readOnly = channelNameInput.readOnly = latencyInput.readOnly = messageInput.readOnly = subMessages.readOnly = InputexclusionServerIds.readOnly = true;
+            tokenInput.readOnly = channelIdInput.readOnly = messageIdInput.readOnly = true;
             submitButton.disabled = true;
             var spinner = this.querySelector('.spinner-border');
             spinner.classList.remove('d-none');
