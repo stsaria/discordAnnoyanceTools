@@ -2,6 +2,7 @@ import traceback, threading, requests, datetime, asyncio, aiohttp, discord, rand
 import Proxy
 from flask import Flask, request, redirect, render_template
 from capmonster_python import HCaptchaTask
+from typing import Optional
 
 proxy = Proxy.Proxy("proxy.txt")
 app = Flask(__name__)
@@ -78,7 +79,9 @@ class DiscordApis():
             logs[self.logId] += f"[-]Captcha Failed - {str(datetime.datetime.now())} {str(e)} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
             return None
     def joinGuild(self, inviteCode:str, capmonsterApiKey=""):
-        res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=self.generateHeaders(), cookies=self.generateCookie())
+        headers = self.generateHeaders()
+        cookies = self.generateCookie()
+        res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=headers, cookies=cookies)
         if str(res.status_code)[0] == "2":
             logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
             return True
@@ -91,15 +94,42 @@ class DiscordApis():
                 "captcha_key":solverResult,
                 "captcha_rqtoken":res.json()["captcha_rqtoken"]
             }
-            res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=self.generateHeaders(), json=payload, cookies=self.generateCookie())
+            res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=headers, json=payload, cookies=cookies)
             if str(res.status_code)[0] == "2":
                 logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
                 return True
             else:
-                print(res.text)
                 logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+f" StatusCode: {res.status_code}\n"
         else:
             logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+f" StatusCode: {res.status_code}\n"
+        return False
+    def changeGlobalName(self, newName:str, capmonsterApiKey=""):
+        headers = self.generateHeaders()
+        cookies = self.generateCookie()
+        res = requests.patch(f"{DISCORD_API_BASE_URL}/users/@me", headers=headers, json={"global_name":newName}, cookies=cookies)
+        if str(res.status_code)[0] == "2":
+            logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} ChangeName Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
+            return True
+        elif res.status_code == 400 and "captcha_key" in res.json() and not capmonsterApiKey.replace(" ", "") == "":
+            logs[self.logId] += f"[?]Captcha - {str(datetime.datetime.now())} ChangeName Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
+            solverResult = self.hcaptchaSolver(capmonsterApiKey, str(res.json()["captcha_sitekey"]), res.json()["captcha_rqdata"])
+            if not solverResult:
+                return False
+            payload = {
+                "captcha_key":solverResult,
+                "captcha_rqtoken":res.json()["captcha_rqtoken"],
+                "global_name":newName
+            }
+            res = requests.patch(f"{DISCORD_API_BASE_URL}/users/@me", headers=headers, json=payload, cookies=cookies)
+            if str(res.status_code)[0] == "2":
+                logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
+                return True
+            else:
+                logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+f" StatusCode: {res.status_code}\n"
+        else:
+            print(res.text)
+            logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} ChangeName Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+f" StatusCode: {res.status_code}\n"
+        return False
 
 class DiscordBot(discord.Client):
     def __init__(self, logId:str, token:str, id:int, name:str, latency:int, messages:list[str], option:list, mode:int):
@@ -121,6 +151,10 @@ class DiscordBot(discord.Client):
             self.emoji, self.messageId = option
         elif mode == 4:
             self.messageId = option[0]
+        elif mode == 6:
+            self.newName, self.capmonsterKey = option
+        elif mode == 7:
+            self.newName = option[0]
         self.mode = mode
     async def banUser(self, user:discord.Member):
         try:
@@ -215,11 +249,6 @@ class DiscordBot(discord.Client):
                     logs[self.logId] += f"Error: Not Found Channel - ID:{self.user.id}\n"
                     return
                 self.guild = channel.guild
-            try:
-                i = self.guild.get_member(self.user.id)
-                await i.edit(nick="឵᠎")
-            except:
-                pass
             if self.allUserBan:
                 await self.banAllUser(self.guild)
             if self.allChannelDelete:
@@ -298,11 +327,23 @@ class DiscordBot(discord.Client):
             try:
                 channel = self.get_channel(self.channelId)
                 async with channel.typing():
+                    logs[self.logId] += f"[+]Typing start - {str(datetime.datetime.now())} Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
                     while not self.logId in stops:
-                        logs[self.logId] += f"[+]Typing now - {str(datetime.datetime.now())} Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
                         await asyncio.sleep(20)
+                    logs[self.logId] += f"[=]Typing end - {str(datetime.datetime.now())} Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
             except:
                 logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} Typing Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
+        elif self.mode == 6:
+            apis = DiscordApis(self.logId, self.token)
+            apis.changeGlobalName(self.newName, self.capmonsterKey)
+        elif self.mode == 7:
+            try:
+                guild = self.get_guild(self.guildId)
+                i = guild.get_member(self.user.id)
+                await i.edit(nick=self.newName)
+                logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} ChangeNickName Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
+            except:
+                logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} ChangeNickName Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
     async def on_message(self, message):
         if message.author.bot:
             return
@@ -352,6 +393,44 @@ def tokenChecker():
                 logs[logId] += f"Error: invalid token - {token}\n\n"
         return render_template("selfBotTokenChecker.html", logId=logId)
     return render_template("selfBotTokenChecker.html")
+
+@app.route("/changeName", methods=["GET", "POST"])
+def changeName():
+    if request.method == "POST":
+        proxy.getProxy()
+        logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
+        logs[logId] = "Start Pman ChangeName P7P\n\n"
+        
+        tokens = request.form["tokens"].split("\r\n")
+        newName = request.form["newName"]
+        capmonsterApiKey = request.form["capmonsterApiKey"]
+        
+        for token in tokens:
+            bot = DiscordBot(logId, token, None, None, None, None, [newName, capmonsterApiKey], 6)
+            logIdBotClass[logId] = bot
+            botThread = threading.Thread(target=bot.runBot, daemon=True)
+            botThread.start()
+        return render_template("selfBotChangeName.html", logId=logId)
+    return render_template("selfBotChangeName.html")
+
+@app.route("/changeNickName", methods=["GET", "POST"])
+def changeNickName():
+    if request.method == "POST":
+        proxy.getProxy()
+        logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
+        logs[logId] = "Start Pman ChangeNickName P3P\n\n"
+        
+        tokens = request.form["tokens"].split("\r\n")
+        guildId = int(request.form["guildId"])
+        newName = request.form["newName"]
+        
+        for token in tokens:
+            bot = DiscordBot(logId, token, guildId, None, None, None, [newName], 7)
+            logIdBotClass[logId] = bot
+            botThread = threading.Thread(target=bot.runBot, daemon=True)
+            botThread.start()
+        return render_template("selfBotChangeNickName.html", logId=logId)
+    return render_template("selfBotChangeNickName.html")
 
 @app.route("/joinGuild", methods=["GET", "POST"])
 def joinGuild():

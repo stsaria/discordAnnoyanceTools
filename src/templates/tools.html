@@ -32,6 +32,8 @@
                 <li><a href="grabberGenerator">GrabberGenerator</a></li>
                 <br>
                 <h3>SelfBot</h3>
+                <li><a href="changeName" id="jLink">ChangeName</a></li>
+                <li><a href="changeNickName" id="kLink">ChangeNickName</a></li>
                 <li><a href="joinGuild" id="bLink">JoinGuild</a></li>
                 <li><a href="reaction" id="gLink">Reaction</a></li>
                 <li><a href="pushButton" id="hLink">PushButton</a></li>
@@ -66,6 +68,8 @@
         const gLinkElement = document.getElementById('gLink');
         const hLinkElement = document.getElementById('hLink');
         const iLinkElement = document.getElementById('iLink');
+        const jLinkElement = document.getElementById('jLink');
+        const kLinkElement = document.getElementById('kLink');
 
         bLinkElement.href = `http://${window.location.hostname}:8081/joinGuild`;
         cLinkElement.href = `http://${window.location.hostname}:8081/nuke`;
@@ -75,6 +79,8 @@
         gLinkElement.href = `http://${window.location.hostname}:8081/reaction`;
         hLinkElement.href = `http://${window.location.hostname}:8081/pushButton`;
         iLinkElement.href = `http://${window.location.hostname}:8081/typing`;
+        jLinkElement.href = `http://${window.location.hostname}:8081/changeName`;
+        kLinkElement.href = `http://${window.location.hostname}:8081/changeNickName`;
     </script>
 </body>
 </html>
