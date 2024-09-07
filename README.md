@@ -1,37 +1,37 @@
-# Discordの荒らし等のツール
+# Discord Annoyance Tools
 https://github.com/user-attachments/assets/a0d6f460-142b-4e97-bf82-c616b433ee61
-
-
-※このプログラムは、私が勉強用として作ったものですので、これで荒らしして特定とかされても責任を負うことはないですよ〜
-ちなみにLinuxはあんまりちゃんと動かないです
-## ツールリスト
-### Bot系
+## Tools
+### Bot
 - Nuke
-### WebHook系
+### WebHook
 - Nuke
-- GrabberGenerator
-### セルフBot系
+- GrabberGenerator (Work only Windows)
+### SelfBot
+#### Account
+- TokenChecker
+- ChangeStatus
 - ChangeName
 - ChangeNickName
+#### Guild
 - JoinGuild
-- Reaction
-- PushButton
+- LeaveGuild
+- LeaveAllGuild
+#### Spam
 - Typing
 - Nuke
 - ChannelNuke
-- LeaveGuild
-- LeaveAllGuild
-- TokenChecker
-## 使用ポート
-- 8080 : 通常のツール用Flaskポート
-- 8081 : セルフボット用Flaskポート
-## 実行方法
-- ダウンロード
+#### Verify
+- Reaction
+- PushButton
+## Ports used
+- 8080 : Flask port for normal tools
+- 8081 : Flask port for Self-Bot
+## How to execute
+- Download
 ```
 git clone https://github.com/stsaria/discordAnnoyanceTools
 ```
-- 実行
+- Run
 ```
 start.bat
 ```
-※なんだかんだLinuxとかではrootじゃないと動かない

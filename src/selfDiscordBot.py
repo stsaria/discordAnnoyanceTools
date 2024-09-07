@@ -109,8 +109,7 @@ class DiscordApis():
             logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+f" StatusCode: {res.status_code}\n"
         return False
     def changeGlobalName(self, newName:str, capmonsterApiKey=""):
-        headers, cookies = self.generateHeadersAndCookies()
-        res = requests.patch(f"{DISCORD_API_BASE_URL}/users/@me", headers=self.headers, json={"global_name":newName}, cookies=cookies)
+        res = requests.patch(f"{DISCORD_API_BASE_URL}/users/@me", headers=self.headers, json={"global_name":newName}, cookies=self.cookies)
         if str(res.status_code)[0] == "2":
             logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} ChangeName Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
             return True
@@ -124,7 +123,7 @@ class DiscordApis():
                 "captcha_rqtoken":res.json()["captcha_rqtoken"],
                 "global_name":newName
             }
-            res = requests.patch(f"{DISCORD_API_BASE_URL}/users/@me", headers=self.headers, json=payload, cookies=cookies)
+            res = requests.patch(f"{DISCORD_API_BASE_URL}/users/@me", headers=self.headers, json=payload, cookies=self.cookies)
             if str(res.status_code)[0] == "2":
                 logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
                 return True
@@ -141,7 +140,7 @@ class DiscordBot(discord.Client):
         self.logId = logId
         self.token = token
         
-        self.guildId = self.userId = self.channelId = id
+        self.id = id
         self.channelName = self.groupName = name
         
         self.nukeLatency = latency
@@ -243,12 +242,12 @@ class DiscordBot(discord.Client):
         try:
             self.guild = None
             if self.channelName:
-                self.guild = self.get_guild(self.guildId)
+                self.guild = self.get_guild(self.id)
                 if not self.guild:
                     logs[self.logId] += f"Error: The server you entered has not been joined by a bot - ID:{self.user.id}\n"
                     return
             else:
-                channel = self.get_channel(self.channelId)
+                channel = self.get_channel(self.id)
                 if not channel:
                     logs[self.logId] += f"Error: Not Found Channel - ID:{self.user.id}\n"
                     return
@@ -295,7 +294,7 @@ class DiscordBot(discord.Client):
             await self.nuke()
         elif self.mode == 1:
             try:
-                guild = self.get_guild(self.guildId)
+                guild = self.get_guild(self.id)
                 await guild.leave()
                 logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} LeaveGuild Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
             except:
@@ -305,7 +304,7 @@ class DiscordBot(discord.Client):
             apis.joinGuild(self.inviteCode, self.capmonsterKey)
         elif self.mode == 3:
             try:
-                channel = self.get_channel(self.channelId)
+                channel = self.get_channel(self.id)
                 message = await channel.fetch_message(self.messageId)
                 if self.emoji[1].replace(" ", "") == "":
                     await message.add_reaction(self.emoji[0])
@@ -316,7 +315,7 @@ class DiscordBot(discord.Client):
                 logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} Reaction Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
         elif self.mode == 4:
             try:
-                channel = self.get_channel(self.channelId)
+                channel = self.get_channel(self.id)
                 message = await channel.fetch_message(self.messageId)
                 for component in message.components:
                     if type(component) == discord.Button:
@@ -330,7 +329,7 @@ class DiscordBot(discord.Client):
                 logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} PushButton Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
         elif self.mode == 5:
             try:
-                channel = self.get_channel(self.channelId)
+                channel = self.get_channel(self.id)
                 async with channel.typing():
                     logs[self.logId] += f"[+]Typing start - {str(datetime.datetime.now())} Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
                     while not self.logId in stops:
@@ -343,7 +342,7 @@ class DiscordBot(discord.Client):
             apis.changeGlobalName(self.newName, self.capmonsterKey)
         elif self.mode == 7:
             try:
-                guild = self.get_guild(self.guildId)
+                guild = self.get_guild(self.id)
                 i = guild.get_member(self.user.id)
                 await i.edit(nick=self.newName)
                 logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} ChangeNickName Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
@@ -359,6 +358,20 @@ class DiscordBot(discord.Client):
                     logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} LeaveGuild Token: "+base64.b64encode(str(self.user.id).encode()).decode()+f" {guild.name}\n"
                 except:
                     logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} LeaveGuild Token: "+base64.b64encode(str(self.user.id).encode()).decode()+f" {guild.name}\n"
+        elif self.mode == 9:
+            try:
+                status = discord.Status.online
+                if self.id == 1:
+                    status = discord.Status.offline
+                elif self.id == 2:
+                    status = discord.Status.idle
+                elif self.id == 3:
+                    status = discord.Status.dnd
+                await self.change_presence(status=status)
+                logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} ChangeStatus Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
+            except:
+                print(traceback.format_exc())
+                logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} ChangeStatus Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
     async def on_message(self, message):
         if message.author.bot:
             return
@@ -408,6 +421,26 @@ def tokenChecker():
                 logs[logId] += f"Error: invalid token - {token}\n\n"
         return render_template("selfBotTokenChecker.html", logId=logId)
     return render_template("selfBotTokenChecker.html")
+
+@app.route("/changeStatus", methods=["GET", "POST"])
+def changeStatus():
+    if request.method == "POST":
+        logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
+        logs[logId] = "Start Pman StatusChanger P3G\n\n"
+        
+        tokens = request.form["tokens"].split("\r\n")
+        status = int(request.form["status"])
+        
+        for token in tokens:
+            apis = DiscordApis(logId, token)
+            userInfo = apis.getUserInfo()
+            if userInfo[0]:
+                bot = DiscordBot(logId, token, status, None, None, None, None, 9)
+                logIdBotClass[logId] = bot
+                botThread = threading.Thread(target=bot.runBot, daemon=True)
+                botThread.start()
+        return render_template("selfBotChangeStatus.html", logId=logId)
+    return render_template("selfBotChangeStatus.html")
 
 @app.route("/changeName", methods=["GET", "POST"])
 def changeName():

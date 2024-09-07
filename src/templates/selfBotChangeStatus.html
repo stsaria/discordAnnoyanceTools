@@ -3,18 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discord Annoyance Tools - Reaction</title>
+    <title>Discord Annoyance Tools - ChangeStatus</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
     <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/emoji-button/dist/index.min.js"></script>
     <link rel="stylesheet" href="static/style.css">
-    <style>
-        .emoji-picker{
-            background-color: black;
-        }
-    </style>
 </head>
 <body>
     <div class="bg"></div>
@@ -24,7 +18,7 @@
                 <img src="static/discordLogo.svg" class="notification-icon">
                 <span class="notification-count" id="notificationCount">0</span>
             </div>
-            <h1 class="title">Reaction</h1>
+            <h1 class="title">ChangeStatus</h1>
             <ul class="nav">
                 <li><a href="http://localhost:8080/tools" id="aLink">Tools</a></li>
             </ul>
@@ -34,29 +28,20 @@
                 <div class="col-md-6">
                     <form method="post" class="mb-3" id="form" accept-charset="UTF-8">
                         <div class="mb-2">
-                            <label for="tokens">Tokens:</label>
+                            <label for="tokens">Tokens</label>
                             <textarea class="form-control" id="tokens" name="tokens" oninput="saveContent()" rows="6" placeholder="OTAxxxxxxxxxxxxxxxxxxxxxxxxx" required></textarea>
                         </div>
                         <div class="mb-2">
-                            <label for="channelId">Channel ID:</label>
-                            <input type="text" class="form-control" id="channelId" name="channelId" required>
-                        </div>
-                        <div class="mb-2">
-                            <label for="messageId">Message ID:</label>
-                            <input type="text" class="form-control" id="messageId" name="messageId" required>
-                        </div>
-                        <div class="mb-2">
-                            <span id="emojiTrigger" class="btn btn-primary" style="cursor: pointer;">Select Emoji</span>
-                            <span id="selectedEmoji">None</span>
-                            <input type="hidden" class="form-control" name="emoji" id="emojiInput">
-                        </div>
-                        <div class="mb-2">
-                            <label for="customEmoji">Input field for custom Emoji:</label>
-                            <input type="text" class="form-control" id="customEmoji" name="customEmoji" placeholder="<:fuckemoji:0123456789>">
+                            <select class="form-control" id="status" name="status">
+                                <option value="0">Online</option>
+                                <option value="1">Offline</option>
+                                <option value="2">AFK</option>
+                                <option value="3">DND</option>
+                            </select>
                         </div>
                         <button type="submit" id="submit" class="btn btn-primary">
                             <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                            Reaction
+                            Change
                         </button>
                     </form>
                 </div>
@@ -76,12 +61,9 @@
 
         document.getElementById('form').addEventListener('submit', function(event) {
             var tokensInput = document.getElementById("tokens");
-            var emojiTriggerInput = document.getElementById("emojiTrigger");
-            var customEmojiInput = document.getElementById("customEmoji");
-            var channelIdInput = document.getElementById("channelId");
-            var messageIdInput = document.getElementById("messageId");
+            var statusInput = document.getElementById("status")
             var submitButton = document.getElementById("submit");
-            tokenInput.readOnly = emojiTriggerInput.readOnly = customEmojiInput.readOnly = channelIdInput.readOnly = messageIdInput.readOnly = true;
+            tokenInput.readOnly = statusInput.readOnly = true;
             submitButton.disabled = true;
             var spinner = this.querySelector('.spinner-border');
             spinner.classList.remove('d-none');
@@ -106,19 +88,6 @@
             count = (count + 1) % 201; // 200を超えたらリセット
             notificationCount.textContent = count;
         }, 50);
-
-        // 絵文字セレクト
-        const picker = new EmojiButton();
-        const trigger = document.querySelector('#emojiTrigger');
-        const selectedEmoji = document.querySelector('#selectedEmoji');
-        const emojiInput = document.querySelector('#emojiInput');
-        picker.on('emoji', emoji => {
-            selectedEmoji.textContent = emoji;
-            emojiInput.value = emoji;
-        });
-        trigger.addEventListener('click', () => {
-            picker.showPicker(trigger);
-        });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
 </body>

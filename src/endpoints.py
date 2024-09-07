@@ -28,6 +28,11 @@ def index():
 @app.route("/tools")
 def tools():
     return render_template("tools.html")
+
+@app.route("/toSelfBot", methods=["GET"])
+def toSelfBot():
+    return render_template("toSelfBot.html", page=request.args.get("page"))
+
 @app.route("/getDiscordWebhookLog", methods=["GET"])
 def getDiscordWebhookLog():
     if request.args.get("id") in discordWebhook.logs:

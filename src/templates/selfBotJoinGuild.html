@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja" data-bs-theme="dark">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,7 +24,7 @@
             </ul>
         </header>
         <div class="content">
-            <p>※hcapchaの確認が必要になるアカウントはCapmonsterのApiKeyがないと参加させれません</p>
+            <p>*The accounts that require hcapcha verification cannot be allowed to participate without a Capmonster ApiKey.</p>
             <div class="row">
                 <div class="col-md-6">
                     <form method="post" class="mb-3" id="form" accept-charset="UTF-8">
@@ -37,12 +37,12 @@
                             <input type="text" class="form-control" id="capmonsterApiKey" name="capmonsterApiKey" required>
                         </div>
                         <div class="mb-2">
-                            <label for="guildInviteCode">サーバー招待コード</label>
+                            <label for="guildInviteCode">Server Invite Code</label>
                             <p>https://discord.gg/<input type="text" id="guildInviteCode" name="guildInviteCode" placeholder="xxxxxx" required></p>
                         </div>
                         <button type="submit" id="submit" class="btn btn-primary">
                             <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                            参加
+                            Join
                         </button>
                     </form>
                 </div>

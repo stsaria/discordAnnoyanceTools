@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja" data-bs-theme="dark">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,11 +30,11 @@
                             <textarea class="form-control" id="webhookUrls" name="webhookUrls" rows="6" placeholder="https://discord.com/api/webhooks/*************/^^^^^^^^^^^^^^" required></textarea>
                         </div>
                         <div class="mb-2">
-                            <label for="latency">レイテンシ（1Nukeと1Nukeの間の遅延ms）</label>
+                            <label for="latency">Latency (ms delay between 1 Nuke and 1 Nuke)</label>
                             <input type="number" class="form-control" id="latency" name="latency" value="100" required>
                         </div>
                         <div class="mb-2">
-                            <label for="message">メッセージ</label>
+                            <label for="message">Message</label>
                             <textarea class="form-control" id="message" name="message" rows="15" required># 荒らし共栄圈最強
 [荒らし.com](<https://荒らし.com>)
 
@@ -53,7 +53,7 @@ https://discord.gg/wa5mn6Z68R
                     </form>
                 </div>
             </div>
-            <p>== ログ ==</p>
+            <p>== Log ==</p>
             {% if logId %}
             <script src="https://unpkg.com/htmx.org@2.0.1"></script>
             <button class="btn btn-primary" onclick="location.href='stopDiscordWebhook?id={{ logId }}'">Stop</button>
