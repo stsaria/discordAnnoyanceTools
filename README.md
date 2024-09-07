@@ -20,6 +20,7 @@ https://github.com/user-attachments/assets/a0d6f460-142b-4e97-bf82-c616b433ee61
 - Nuke
 - ChannelNuke
 - LeaveGuild
+- LeaveAllGuild
 - TokenChecker
 ## 使用ポート
 - 8080 : 通常のツール用Flaskポート

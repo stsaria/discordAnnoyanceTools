@@ -1,10 +1,8 @@
 import traceback, threading, requests, datetime, asyncio, aiohttp, discord, random, string, base64, json
-import Proxy
 from flask import Flask, request, redirect, render_template
 from capmonster_python import HCaptchaTask
 from typing import Optional
 
-proxy = Proxy.Proxy("proxy.txt")
 app = Flask(__name__)
 
 logs = {}
@@ -26,47 +24,56 @@ class DiscordApis():
     def __init__(self, logId:str, token:str):
         self.logId = logId
         self.token = token
+        self.headers, self.cookies = self.generateHeadersAndCookies()
     def generateFingerprint(self):
         headers = {
-            "Accept": "*/*",
-            "Accept-Language": "en-US",
-            "Connection": "keep-alive",
-            "Referer": "https://discord.com/",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-origin",
-            "Sec-GPC": "1",
-            "User-Agent": USER_AGENT,
-            "X-Track": X_SUPER_PROPERTIES,
+            "accept": "*/*",
+            "accept-Language": "en-US",
+            "connection": "keep-alive",
+            "referer": "https://discord.com/register",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "sec-GPC": "1",
+            "user-agent": USER_AGENT,
+            "x-super-properties": X_SUPER_PROPERTIES,
+            "x-context-properties": "eyJsb2NhdGlvbiI6IlJlZ2lzdGVyIn0=",
+            "authorization": "undefined",
+            "accept-encoding": "gzip, deflate, br",
+            "sec-ch-ua-mobile": "?0"
         }
         res = requests.get("https://discord.com/api/v9/experiments", headers=headers)
         fingerprint = res.json()["fingerprint"]
         return fingerprint
-    def generateHeaders(self):
+    def generateHeadersAndCookies(self):
         headers = {
+            "host": "discord.com",
+            "origin": "discord.com",
+            "connection": "keep-alive",
             "user-agent":USER_AGENT,
-            "Authorization":self.token,
+            "authorization":self.token,
             "x-super-properties":X_SUPER_PROPERTIES,
             "accept":"*/*",
             "accept-language":"en-US",
             "connection":"keep-alive",
-            "DNT":"1",
-            "origin":"https://discord.com",
             "sec-fetch-dest":"empty",
             "sec-fetch-mode":"cors",
             "sec-fetch-site":"same-origin",
+            "sec-ch-ua-mobile": "?0",
             "referer":"https://discord.com/channels/@me",
+            "x-debug-options": "bugReporterEnabled",
             "TE":"Trailers",
             "x-fingerprint":self.generateFingerprint()
         }
-        return headers
-    def generateCookie(self):
-        headers = self.generateHeaders()
         res = requests.get("https://discord.com/app", headers=headers)
-        cookie = res.cookies
-        return cookie
+        cookies = res.cookies
+        cookiesStr = ""
+        for cookie in cookies:
+            cookiesStr += f"{cookie.name}={cookie.value};"
+        headers["Cookie"] = cookiesStr
+        return headers, cookies
     def getUserInfo(self):
-        res = requests.get(f"{DISCORD_API_BASE_URL}/users/@me", headers=self.generateHeaders())
+        res = requests.get(f"{DISCORD_API_BASE_URL}/users/@me", headers=self.headers)
         return str(res.status_code)[0] == "2", json.loads(res.text)
     def hcaptchaSolver(self, apikey:str, sitekey:str, data:str, siteUrl="https://discord.com"):
         try:
@@ -79,9 +86,7 @@ class DiscordApis():
             logs[self.logId] += f"[-]Captcha Failed - {str(datetime.datetime.now())} {str(e)} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
             return None
     def joinGuild(self, inviteCode:str, capmonsterApiKey=""):
-        headers = self.generateHeaders()
-        cookies = self.generateCookie()
-        res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=headers, cookies=cookies)
+        res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=self.headers, cookies=self.cookies)
         if str(res.status_code)[0] == "2":
             logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
             return True
@@ -94,7 +99,7 @@ class DiscordApis():
                 "captcha_key":solverResult,
                 "captcha_rqtoken":res.json()["captcha_rqtoken"]
             }
-            res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=headers, json=payload, cookies=cookies)
+            res = requests.post(f"{DISCORD_API_BASE_URL}/invites/{inviteCode}", headers=self.headers, json=payload, cookies=self.cookies)
             if str(res.status_code)[0] == "2":
                 logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
                 return True
@@ -104,9 +109,8 @@ class DiscordApis():
             logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+f" StatusCode: {res.status_code}\n"
         return False
     def changeGlobalName(self, newName:str, capmonsterApiKey=""):
-        headers = self.generateHeaders()
-        cookies = self.generateCookie()
-        res = requests.patch(f"{DISCORD_API_BASE_URL}/users/@me", headers=headers, json={"global_name":newName}, cookies=cookies)
+        headers, cookies = self.generateHeadersAndCookies()
+        res = requests.patch(f"{DISCORD_API_BASE_URL}/users/@me", headers=self.headers, json={"global_name":newName}, cookies=cookies)
         if str(res.status_code)[0] == "2":
             logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} ChangeName Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
             return True
@@ -120,7 +124,7 @@ class DiscordApis():
                 "captcha_rqtoken":res.json()["captcha_rqtoken"],
                 "global_name":newName
             }
-            res = requests.patch(f"{DISCORD_API_BASE_URL}/users/@me", headers=headers, json=payload, cookies=cookies)
+            res = requests.patch(f"{DISCORD_API_BASE_URL}/users/@me", headers=self.headers, json=payload, cookies=cookies)
             if str(res.status_code)[0] == "2":
                 logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} JoinGuild Token: "+base64.b64encode(self.getUserInfo()[1]["id"].encode()).decode()+"\n"
                 return True
@@ -280,7 +284,8 @@ class DiscordBot(discord.Client):
                         await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
                         random.shuffle(self.channels)
                 else:
-                    await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
+                    for i in range(15):
+                        await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
         except:
             logs[self.logId] += f"-- Error ID:{self.user.id} --\n"+traceback.format_exc()+"\n"
         logs[self.logId] += f"---- End ID:{self.user.id} ----\n"
@@ -344,6 +349,16 @@ class DiscordBot(discord.Client):
                 logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} ChangeNickName Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
             except:
                 logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} ChangeNickName Token: "+base64.b64encode(str(self.user.id).encode()).decode()+"\n"
+        elif self.mode == 8:
+            for guild in self.guilds:
+                try:
+                    if guild.owner == guild.get_member(self.user.id):
+                        await guild.delete()
+                        continue
+                    await guild.leave()
+                    logs[self.logId] += f"[+]Success - {str(datetime.datetime.now())} LeaveGuild Token: "+base64.b64encode(str(self.user.id).encode()).decode()+f" {guild.name}\n"
+                except:
+                    logs[self.logId] += f"[-]Failed - {str(datetime.datetime.now())} LeaveGuild Token: "+base64.b64encode(str(self.user.id).encode()).decode()+f" {guild.name}\n"
     async def on_message(self, message):
         if message.author.bot:
             return
@@ -377,7 +392,7 @@ def stop():
 @app.route("/tokenChecker", methods=["GET", "POST"])
 def tokenChecker():
     if request.method == "POST":
-        proxy.getProxy()
+    
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         logs[logId] = "Start Pman TokenChecker PPP\n\n"
         
@@ -397,7 +412,7 @@ def tokenChecker():
 @app.route("/changeName", methods=["GET", "POST"])
 def changeName():
     if request.method == "POST":
-        proxy.getProxy()
+    
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         logs[logId] = "Start Pman ChangeName P7P\n\n"
         
@@ -406,17 +421,21 @@ def changeName():
         capmonsterApiKey = request.form["capmonsterApiKey"]
         
         for token in tokens:
-            bot = DiscordBot(logId, token, None, None, None, None, [newName, capmonsterApiKey], 6)
-            logIdBotClass[logId] = bot
-            botThread = threading.Thread(target=bot.runBot, daemon=True)
-            botThread.start()
+            apis = DiscordApis(logId, token)
+            userInfo = apis.getUserInfo()
+            if userInfo[0]:
+                logs[logId] += f"""OK Token: {base64.b64encode(str(userInfo[1]["id"]).encode()).decode()}\n"""
+                bot = DiscordBot(logId, token, None, None, None, None, [newName, capmonsterApiKey], 6)
+                logIdBotClass[logId] = bot
+                botThread = threading.Thread(target=bot.runBot, daemon=True)
+                botThread.start()
         return render_template("selfBotChangeName.html", logId=logId)
     return render_template("selfBotChangeName.html")
 
 @app.route("/changeNickName", methods=["GET", "POST"])
 def changeNickName():
     if request.method == "POST":
-        proxy.getProxy()
+    
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         logs[logId] = "Start Pman ChangeNickName P3P\n\n"
         
@@ -425,17 +444,21 @@ def changeNickName():
         newName = request.form["newName"]
         
         for token in tokens:
-            bot = DiscordBot(logId, token, guildId, None, None, None, [newName], 7)
-            logIdBotClass[logId] = bot
-            botThread = threading.Thread(target=bot.runBot, daemon=True)
-            botThread.start()
+            apis = DiscordApis(logId, token)
+            userInfo = apis.getUserInfo()
+            if userInfo[0]:
+                logs[logId] += f"""OK Token: {base64.b64encode(str(userInfo[1]["id"]).encode()).decode()}\n"""
+                bot = DiscordBot(logId, token, guildId, None, None, None, [newName], 7)
+                logIdBotClass[logId] = bot
+                botThread = threading.Thread(target=bot.runBot, daemon=True)
+                botThread.start()
         return render_template("selfBotChangeNickName.html", logId=logId)
     return render_template("selfBotChangeNickName.html")
 
 @app.route("/joinGuild", methods=["GET", "POST"])
 def joinGuild():
     if request.method == "POST":
-        proxy.getProxy()
+    
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         logs[logId] = "Start Pman Joiner PPP\n\n"
         
@@ -459,7 +482,7 @@ def joinGuild():
 @app.route("/leaveGuild", methods=["GET", "POST"])
 def leaveGuild():
     if request.method == "POST":
-        proxy.getProxy()
+    
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         logs[logId] = "Start Pman Leaver PPP\n\n"
         
@@ -480,10 +503,33 @@ def leaveGuild():
         return render_template("selfBotLeaveGuild.html", logId=logId)
     return render_template("selfBotLeaveGuild.html")
 
+@app.route("/leaveAllGuild", methods=["GET", "POST"])
+def leaveAllGuild():
+    if request.method == "POST":
+    
+        logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
+        logs[logId] = "Start Pman AllLeaver P1T\n\n"
+        
+        tokens = request.form["tokens"].split("\r\n")
+        
+        for token in tokens:
+            apis = DiscordApis(logId, token)
+            userInfo = apis.getUserInfo()
+            if userInfo[0]:
+                logs[logId] += f"""OK Token: {base64.b64encode(str(userInfo[1]["id"]).encode()).decode()}\n"""
+                bot = DiscordBot(logId, token, None, None, None, None, None, 8)
+                logIdBotClass[logId] = bot
+                botThread = threading.Thread(target=bot.runBot, daemon=True)
+                botThread.start()
+            else:
+                logs[logId] += f"Error: invalid token - {token}\n"
+        return render_template("selfBotLeaveAllGuild.html", logId=logId)
+    return render_template("selfBotLeaveAllGuild.html")
+
 @app.route("/reaction", methods=["GET", "POST"])
 def reaction():
     if request.method == "POST":
-        proxy.getProxy()
+    
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         logs[logId] = "Start Pman Reaction PwP\n\n"
         
@@ -503,7 +549,7 @@ def reaction():
 @app.route("/pushButton", methods=["GET", "POST"])
 def pushButton():
     if request.method == "POST":
-        proxy.getProxy()
+    
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         logs[logId] = "Start Pman PushButton PeP\n\n"
         
@@ -522,7 +568,7 @@ def pushButton():
 @app.route("/typing", methods=["GET", "POST"])
 def typing():
     if request.method == "POST":
-        proxy.getProxy()
+    
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         logs[logId] = "Start Pman Typer PzP\n\n"
         
@@ -541,7 +587,7 @@ def typing():
 @app.route("/channelNuke", methods=["GET", "POST"])
 def channelNuke():
     if request.method == "POST":
-        proxy.getProxy()
+    
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         logs[logId] = "Start Pman ChannelNuke PQP\n\n"
         
@@ -563,17 +609,21 @@ RandomMention:{randomMention}
 """
         
         for token in tokens:
-            bot = DiscordBot(logId, token, channelId, None, latency, [message]+subMessages, [False, False, randomMention, []], 0)
-            logIdBotClass[logId] = bot
-            botThread = threading.Thread(target=bot.runBot, daemon=True)
-            botThread.start()
+            apis = DiscordApis(logId, token)
+            userInfo = apis.getUserInfo()
+            if userInfo[0]:
+                logs[logId] += f"""OK Token: {base64.b64encode(str(userInfo[1]["id"]).encode()).decode()}\n"""
+                bot = DiscordBot(logId, token, channelId, None, latency, [message]+subMessages, [False, False, randomMention, []], 0)
+                logIdBotClass[logId] = bot
+                botThread = threading.Thread(target=bot.runBot, daemon=True)
+                botThread.start()
         return render_template("selfBotChannelNuke.html", logId=logId)
     return render_template("selfBotChannelNuke.html")
 
 @app.route("/nuke", methods=["GET", "POST"])
 def nuke():
     if request.method == "POST":
-        proxy.getProxy()
+    
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         logs[logId] = "Start Pman Nuke PPP\n\n"
         
@@ -603,10 +653,14 @@ RandomMention:{randomMention}
 """
         
         for token in tokens:
-            bot = DiscordBot(logId, token, guildId, channelName, latency, [message]+subMessages, [allUserBan, allChannelDelete, randomMention, exclusionChannelIds], 0)
-            logIdBotClass[logId] = bot
-            botThread = threading.Thread(target=bot.runBot, daemon=True)
-            botThread.start()
+            apis = DiscordApis(logId, token)
+            userInfo = apis.getUserInfo()
+            if userInfo[0]:
+                logs[logId] += f"""OK Token: {base64.b64encode(str(userInfo[1]["id"]).encode()).decode()}\n"""
+                bot = DiscordBot(logId, token, guildId, channelName, latency, [message]+subMessages, [allUserBan, allChannelDelete, randomMention, exclusionChannelIds], 0)
+                logIdBotClass[logId] = bot
+                botThread = threading.Thread(target=bot.runBot, daemon=True)
+                botThread.start()
         return render_template("selfBotNuke.html", logId=logId)
     return render_template("selfBotNuke.html")
 

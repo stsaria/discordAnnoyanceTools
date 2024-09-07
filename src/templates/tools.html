@@ -32,16 +32,17 @@
                 <li><a href="grabberGenerator">GrabberGenerator</a></li>
                 <br>
                 <h3>SelfBot</h3>
-                <li><a href="changeName" id="jLink">ChangeName</a></li>
-                <li><a href="changeNickName" id="kLink">ChangeNickName</a></li>
-                <li><a href="joinGuild" id="bLink">JoinGuild</a></li>
-                <li><a href="reaction" id="gLink">Reaction</a></li>
-                <li><a href="pushButton" id="hLink">PushButton</a></li>
-                <li><a href="typing" id="iLink">Typing</a></li>
-                <li><a href="nuke" id="cLink">Nuke</a></li>
-                <li><a href="channelNuke" id="dLink">ChannelNuke</a></li>
-                <li><a href="leaveGuild" id="eLink">LeaveGuild</a></li>
-                <li><a href="tokenChecker" id="fLink">TokenChecker</a></li>
+                <li><a id="jLink">ChangeName</a></li>
+                <li><a id="kLink">ChangeNickName</a></li>
+                <li><a id="bLink">JoinGuild</a></li>
+                <li><a id="gLink">Reaction</a></li>
+                <li><a id="hLink">PushButton</a></li>
+                <li><a id="iLink">Typing</a></li>
+                <li><a id="cLink">Nuke</a></li>
+                <li><a id="dLink">ChannelNuke</a></li>
+                <li><a id="eLink">LeaveGuild</a></li>
+                <li><a id="lLink">LeaveAllGuild</a></li>
+                <li><a id="fLink">TokenChecker</a></li>
                 <br>
                 <h3>Etc</h3>
                 <li><a href="settingProxy">SettingProxy</a></li>
@@ -70,6 +71,7 @@
         const iLinkElement = document.getElementById('iLink');
         const jLinkElement = document.getElementById('jLink');
         const kLinkElement = document.getElementById('kLink');
+        const lLinkElement = document.getElementById('lLink');
 
         bLinkElement.href = `http://${window.location.hostname}:8081/joinGuild`;
         cLinkElement.href = `http://${window.location.hostname}:8081/nuke`;
@@ -81,6 +83,7 @@
         iLinkElement.href = `http://${window.location.hostname}:8081/typing`;
         jLinkElement.href = `http://${window.location.hostname}:8081/changeName`;
         kLinkElement.href = `http://${window.location.hostname}:8081/changeNickName`;
+        lLinkElement.href = `http://${window.location.hostname}:8081/leaveAllGuild`;
     </script>
 </body>
 </html>
