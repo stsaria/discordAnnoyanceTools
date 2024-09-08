@@ -1,4 +1,4 @@
-# Discord Annoyance Tools
+# Project Neon
 https://github.com/user-attachments/assets/a0d6f460-142b-4e97-bf82-c616b433ee61
 ## Tools
 ### Bot
@@ -29,7 +29,7 @@ https://github.com/user-attachments/assets/a0d6f460-142b-4e97-bf82-c616b433ee61
 ## How to execute
 - Download
 ```
-git clone https://github.com/stsaria/discordAnnoyanceTools
+git clone https://github.com/stsaria/projectNeon
 ```
 - Run
 ```

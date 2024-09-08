@@ -3,6 +3,8 @@ import discordWebhook, discordBot
 from flask import Flask, request, redirect, render_template
 
 app = Flask(__name__)
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 def getIpAddresses():
     ipv4Url = "https://api.ipify.org?format=json"
