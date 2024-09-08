@@ -31,7 +31,7 @@ bash ./selfBot/bin/activate
             p.communicate()
     
     port = 8080
-    webbrowser.open(f"http://localhost:{port}")
+    #webbrowser.open(f"http://localhost:{port}")
     endpoints.app.run(host="0.0.0.0", port=port)
 
 if __name__ == "__main__":

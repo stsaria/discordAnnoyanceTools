@@ -416,7 +416,8 @@ def tokenManager():
         if mode == 0:
             manager.addToken(token, email, password, etc)
         elif mode in [3,4]:
-            successTokenInfos = failedTokenInfos = []
+            successTokenInfos = []
+            failedTokenInfos = []
             for tokenInfo in manager.getTokenInfos():
                 apis = DiscordApis("n0nenu11", tokenInfo["token"])
                 userInfo = apis.getUserInfo()
@@ -428,7 +429,7 @@ def tokenManager():
             for tokenInfo in successTokenInfos:
                 tokenInfosStr += f"""{tokenInfo["token"]}\n"""
             tokenInfosStr += "\n===== Failed Tokens =====\n"
-            for tokenInfo in successTokenInfos:
+            for tokenInfo in failedTokenInfos:
                 tokenInfosStr += f"""{tokenInfo["token"]}\n"""
             tokenInfosStr += "\n"
             if mode == 4:
@@ -450,7 +451,7 @@ def tokenManager():
         tokenInfosStr += f"""{tokenInfo["token"]}\n"""
     tokenInfosStr += "\n===== Token Infos =====\n"
     for i in range(len(tokenInfos)):
-        tokenInfosStr += f"""No. {i}\nToken: {tokenInfos[i]["token"]}\nEmail: {tokenInfos[i]["email"]}\nPassword:{tokenInfos[i]["password"]}\nEtc:{tokenInfos[i]["etc"]}\n\n"""
+        tokenInfosStr += f"""No. {i}\nToken: {tokenInfos[i]["token"]}\nEmail: {tokenInfos[i]["email"]}\nPassword: {tokenInfos[i]["password"]}\nEtc: {tokenInfos[i]["etc"]}\n\n"""
     return render_template("tokenManager.html", tokens=tokenInfosStr)
 
 @app.route("/tokenChecker", methods=["GET", "POST"])
