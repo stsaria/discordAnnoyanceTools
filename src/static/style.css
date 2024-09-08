@@ -21,18 +21,16 @@ body {
 
 .title {
     font-size: 2em;
-    .titleNeon{
-        color: rgb(255, 0, 195);
-        text-align: center;
-        text-shadow: 
-            0 0 5px red,
-            0 0 10px red,
-            0 0 15px red,
-            0 0 20px red,
-            0 0 25px red,
-            0 0 30px red,
-            0 0 35px red;
-    }
+    color: rgba(246, 255, 0, 0.531);
+    text-align: center;
+    text-shadow: 
+        0 0 5px red,
+        0 0 10px red,
+        0 0 15px red,
+        0 0 20px red,
+        0 0 25px red,
+        0 0 30px red,
+        0 0 35px red;
 }
 
 .nav {
