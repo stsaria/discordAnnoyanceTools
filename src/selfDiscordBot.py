@@ -285,7 +285,8 @@ class DiscordBot(discord.Client):
                         await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
                         random.shuffle(self.channels)
                 else:
-                    await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
+                    for i in range(10):
+                        await self.oneNuke(self.messages, self.guild, channel, self.randomMention, roles, members)
         except:
             logs[self.logId] += f"-- Error ID:{self.user.id} --\n"+traceback.format_exc()+"\n"
         logs[self.logId] += f"---- End ID:{self.user.id} ----\n"
