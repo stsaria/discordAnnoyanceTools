@@ -413,7 +413,11 @@ def tokenManager():
         password = request.form["password"]
         etc = request.form["etc"]
         mode = int(request.form["mode"])
-        if mode == 0:
+        tokens = request.form["tokens"].split("\r\n")
+        if not tokens == [""]:
+            for token in tokens:
+                manager.addToken(token, "", "", "")
+        elif mode == 0:
             manager.addToken(token, email, password, etc)
         elif mode in [3,4]:
             successTokenInfos = []
@@ -433,11 +437,11 @@ def tokenManager():
                 tokenInfosStr += f"""{tokenInfo["token"]}\n"""
             tokenInfosStr += "\n"
             if mode == 4:
-                for i in range(len(manager.getTokenInfos())):
-                    manager.deleteToken(i)
+                for tokenInfo in failedTokenInfos:
+                    manager.deleteToken(tokenInfo)
         elif mode == 5:
-            for i in failedTokenInfos:
-                manager.deleteToken(failedTokenInfos)
+            for tokenInfo in manager.getTokenInfos():
+                manager.deleteToken(tokenInfo)
         else:
             no = int(request.form["no"])
             if mode == 1:
@@ -446,13 +450,16 @@ def tokenManager():
                 manager.deleteToken(no)
     manager = TokenManager("TOKEN")
     tokenInfos = manager.getTokenInfos()
+    tokensOnlyStr = ""
     tokenInfosStr += "======== Tokens ========\n"
     for tokenInfo in tokenInfos:
+        tokensOnlyStr += f"""\\n{tokenInfo["token"]}"""
         tokenInfosStr += f"""{tokenInfo["token"]}\n"""
+    tokensOnlyStr = tokensOnlyStr.replace("\\n", "", 1)
     tokenInfosStr += "\n===== Token Infos =====\n"
     for i in range(len(tokenInfos)):
         tokenInfosStr += f"""No. {i}\nToken: {tokenInfos[i]["token"]}\nEmail: {tokenInfos[i]["email"]}\nPassword: {tokenInfos[i]["password"]}\nEtc: {tokenInfos[i]["etc"]}\n\n"""
-    return render_template("tokenManager.html", tokens=tokenInfosStr)
+    return render_template("tokenManager.html", tokenInfos=tokenInfosStr, tokensOnly=tokensOnlyStr)
 
 @app.route("/tokenChecker", methods=["GET", "POST"])
 def tokenChecker():
