@@ -461,26 +461,6 @@ def tokenManager():
         tokenInfosStr += f"""No. {i}\nToken: {tokenInfos[i]["token"]}\nEmail: {tokenInfos[i]["email"]}\nPassword: {tokenInfos[i]["password"]}\nEtc: {tokenInfos[i]["etc"]}\n\n"""
     return render_template("tokenManager.html", tokenInfos=tokenInfosStr, tokensOnly=tokensOnlyStr)
 
-@app.route("/tokenChecker", methods=["GET", "POST"])
-def tokenChecker():
-    if request.method == "POST":
-    
-        logId = "".join(random.choice(string.ascii_lowercase) for _ in range(12))
-        logs[logId] = "Start Pman TokenChecker PPP\n\n"
-        
-        tokens = request.form["tokens"].split("\r\n")
-        
-        for token in tokens:
-            apis = DiscordApis(logId, token)
-            userInfo = apis.getUserInfo()
-            if userInfo[0]:
-                userInfo = userInfo[1]
-                logs[logId] += f"""====== Token: {token} ======\nID - {userInfo["id"]}\nUserName - {userInfo["username"]}\nGlobalName - {userInfo["global_name"]}\nEmail - {userInfo["email"]}\nPhoneNumber - {userInfo["phone"]}\n\n"""
-            else:
-                logs[logId] += f"Error: invalid token - {token}\n\n"
-        return render_template("selfBotTokenChecker.html", logId=logId)
-    return render_template("selfBotTokenChecker.html")
-
 @app.route("/changeStatus", methods=["GET", "POST"])
 def changeStatus():
     if request.method == "POST":
