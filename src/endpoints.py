@@ -14,13 +14,13 @@ def getIpAddresses():
         ipv4Response = requests.get(ipv4Url)
         ipv4Address = ipv4Response.json()["ip"]
     except requests.RequestException:
-        ipv4Address = "対応していません"
+        ipv4Address = "Error"
     
     try:
         ipv6Response = requests.get(ipv6Url)
         ipv6Address = ipv6Response.json()["ip"]
     except requests.RequestException:
-        ipv6Address = "対応していません"
+        ipv6Address = "Error"
     return ipv4Address, ipv6Address
 
 @app.route("/")
