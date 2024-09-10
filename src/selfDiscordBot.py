@@ -1,4 +1,4 @@
-import traceback, threading, websocket, platform, requests, datetime, asyncio, aiohttp, discord, random, string, base64, json, time
+import traceback, threading, requests, datetime, asyncio, aiohttp, discord, random, string, base64, json, time
 from flask import Flask, request, redirect, render_template
 from tokenManager import TokenManager
 from capmonster_python import HCaptchaTask
