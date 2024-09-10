@@ -1,4 +1,4 @@
-import traceback, threading, requests, datetime, asyncio, aiohttp, discord, random, string, base64, json
+import traceback, threading, websocket, platform, requests, datetime, asyncio, aiohttp, discord, random, string, base64, json, time
 from flask import Flask, request, redirect, render_template
 from tokenManager import TokenManager
 from capmonster_python import HCaptchaTask
@@ -49,23 +49,23 @@ class DiscordApis():
         return fingerprint
     def generateHeadersAndCookies(self):
         headers = {
-            "host": "discord.com",
-            "origin": "discord.com",
-            "connection": "keep-alive",
-            "user-agent":USER_AGENT,
+            "User-Agent":USER_AGENT,
             "authorization":self.token,
             "x-super-properties":X_SUPER_PROPERTIES,
             "accept":"*/*",
-            "accept-language":"en-US",
+            "accept-language":"ja-JP",
             "connection":"keep-alive",
             "sec-fetch-dest":"empty",
             "sec-fetch-mode":"cors",
             "sec-fetch-site":"same-origin",
-            "sec-ch-ua-mobile": "?0",
             "referer":"https://discord.com/channels/@me",
+            "origin": 'https://discord.com',
             "x-debug-options": "bugReporterEnabled",
             "TE":"Trailers",
-            "x-fingerprint":self.generateFingerprint()
+            "x-debug-options": "bugReporterEnabled",
+            "x-discord-locale": "ja-JP",
+            "DNT": "1",
+            "x-discord-timezone": "Asia/Saigon",
         }
         res = requests.get("https://discord.com/app", headers=headers)
         cookies = res.cookies
