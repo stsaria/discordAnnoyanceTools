@@ -32,19 +32,19 @@
                             <textarea class="form-control" id="tokens" name="tokens" oninput="saveContent()" rows="6" placeholder="OTAxxxxxxxxxxxxxxxxxxxxxxxxx" required></textarea>
                         </div>
                         <div class="mb-2">
-                            <label for="guildId">サーバーID</label>
+                            <label for="guildId">Server ID</label>
                             <input type="text" class="form-control" id="guildId" name="guildId" required>
                         </div>
                         <div class="mb-2">
-                            <label for="channelName">チャンネル名</label>
+                            <label for="channelName">Channel Name</label>
                             <input type="text" class="form-control" id="channelName" name="channelName" required>
                         </div>
                         <div class="mb-2">
-                            <label for="latency">レイテンシ（1Nukeと1Nukeの間の遅延ms）</label>
+                            <label for="latency">Latency (ms delay between 1 Nuke and 1 Nuke)</label>
                             <input type="number" class="form-control" id="latency" name="latency" value="300" required>
                         </div>
                         <div class="mb-2">
-                            <label for="message">メッセージ</label>
+                            <label for="message">Message1</label>
                             <textarea class="form-control" id="message" name="message" rows="15" required># 荒らし共栄圈最強
 [荒らし.com](<https://荒らし.com>)
 
@@ -55,17 +55,17 @@ https://discordapp.com/./wa5mn6Z68R
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||</textarea>
                         </div>
                         <div class="mb-2">
-                            <label for="message">メッセージ2(コマンド荒らしなど（スラッシュコマンドは引数を使用できません）　改行で分けることができます !userId!はサーバーのユーザーIDに変わります)</label>
+                            <label for="message">Message 2 (e.g. command trolling (slash commands cannot use arguments) can be separated by a new line !userId! will change to the server's user ID)</label>
                             <textarea class="form-control" id="subMessages" name="subMessages" rows="7"></textarea>
                         </div>
                         <div class="mb-2">
-                            <label for="exclusionChannelIds">除外チャンネルID（カンマ区切り）</label>
+                            <label for="exclusionChannelIds">Excluded channel ID (comma separated)</label>
                             <input type="text" class="form-control" id="exclusionChannelIds" name="exclusionChannelIds">
                         </div>
                         <div class="mb-2">
-                            <input type="checkbox" name="allChannelDelete">すべてのチャンネルを削除<br>
-                            <input type="checkbox" name="allUserBan">すべての人をBAN<br>
-                            <input type="checkbox" name="randomMention" checked>ランダムメンション<br>
+                            <input type="checkbox" name="allChannelDelete">Delete all channels<br>
+                            <input type="checkbox" name="allUserBan">BAN all member<br>
+                            <input type="checkbox" name="randomMention" checked>Random mention<br>
                         </div>
                         {% if not logId %}
                         <button type="submit" id="submit" class="btn btn-primary">
@@ -76,7 +76,7 @@ https://discordapp.com/./wa5mn6Z68R
                     </form>
                 </div>
             </div>
-            <p>== ログ ==</p>
+            <p>== Log ==</p>
             {% if logId %}
             <script src="https://unpkg.com/htmx.org@2.0.1"></script>
             <button class="btn btn-primary" onclick="location.href='stop?id={{ logId }}'">Stop</button>

