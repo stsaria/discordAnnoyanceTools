@@ -77,7 +77,6 @@ class DiscordBot(commands.Bot):
                         bMessage = message+"\n"+"".join(random.choice(string.ascii_lowercase) for _ in range(30))
                     bMessage = bMessage.replace("!userId!", str(random.choice(guild.members).id))
                     await asyncio.gather(*(self.sendMessage(bMessage, channel, latency*0.001) for channel in self.channels))
-            await guild.leave()
         except:
             logs[self.logId] += "-- Error --\n"+traceback.format_exc()+"\n"
         logs[self.logId] += "---- End ----\n"
@@ -89,8 +88,6 @@ class DiscordBot(commands.Bot):
             logs[self.logId] += f"Error: The server you entered has not been joined by a bot."
             await self.close()
             return
-        with open('assets/transparentAvatar.png', 'rb') as avatar:
-            await self.user.edit(avatar=avatar.read())
         i = self.guild.get_member(self.user.id)
         await i.edit(nick="឵᠎")
         if self.allUserBan:

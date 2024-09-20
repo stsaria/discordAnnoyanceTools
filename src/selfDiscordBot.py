@@ -14,6 +14,7 @@ failedChannels = []
 DISCORD_API_BASE_URL= "https://discord.com/api/v9"
 
 async def getInfo():
+    
     async with aiohttp.ClientSession() as session:
         info = await discord.utils._get_info(session)
         return info
